@@ -1,0 +1,3 @@
+*.openthing text eol=lf
+*.opencatalog text eol=lf
+*.catdef text eol=lf

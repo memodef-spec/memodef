@@ -1,0 +1,29 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.1.0",
+  "type": "memodef:Library",
+  "id": "memodef-canonical-template-library",
+  "name": "memodef Canonical Template Library",
+  "description": "The canonical library of memo templates, curated by the memodef community. Each entry is a memodef:Memo artifact demonstrating a canonical pattern adopters can copy from. memodef does NOT curate operational memos — operational memos live in adopter orgs' per-position working repos per the org's declared memo-location convention.",
+  "version": "0.1.0",
+
+  "product": {
+    "name": "memodef",
+    "homepage": "https://memodef.org",
+    "repository": "https://github.com/memodef-spec/memodef",
+    "license": "MIT",
+    "maintainer": "memodef community"
+  },
+
+  "data": {
+    "items": []
+  },
+
+  "metadata": {
+    "created": "2026-04-26",
+    "schema_version": "0.1.0",
+    "items_count": 0,
+    "last_updated": "2026-04-26",
+    "_comment": "This catalog indexes canonical memo templates at templates/. Operational memos are NOT curated here — they live in adopter orgs' per-position working repos per the org-declared memo-location convention. The first template (handoff-memo) is forthcoming as PR #1."
+  }
+}
