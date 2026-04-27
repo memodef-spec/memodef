@@ -16,14 +16,23 @@
   },
 
   "data": {
-    "items": []
+    "items": [
+      {
+        "id": "self-extraction-request",
+        "name": "Self-Extraction Request Template",
+        "version": "1.0.0",
+        "description": "Canonical handoff template for asking the incumbent of a role to self-extract that role into a roledef artifact. Captures the structural shape of the request: role context, background (with role-vs-job and OPD framing), the ask, required reading list, conventions for safe self-extraction (provenance audit, additive-only invariant for derivations, OPD inclusion), don'ts, done definition, memo convention notes. Adopters copy + replace placeholders + save to recipient's working repo at ./memos/.",
+        "file": "templates/self-extraction-request.openthing",
+        "added": "2026-04-27",
+        "decision": "decisions/self-extraction-request.md"
+      }
+    ]
   },
 
   "metadata": {
     "created": "2026-04-26",
     "schema_version": "0.1.0",
-    "items_count": 0,
-    "last_updated": "2026-04-26",
-    "_comment": "This catalog indexes canonical memo templates at templates/. Operational memos are NOT curated here — they live in adopter orgs' per-position working repos per the org-declared memo-location convention. The first template (handoff-memo) is forthcoming as PR #1."
+    "items_count": 1,
+    "last_updated": "2026-04-27 (self-extraction-request template added — first canonical template in memodef)"
   }
 }
