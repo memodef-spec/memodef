@@ -13,6 +13,20 @@ memodef sits in the catdef family alongside [roledef](https://github.com/roledef
 
 > **Status:** v0.1 bootstrap. The `memodef:Memo` type formalizes the `x.memo.*` extension namespace established empirically by [catdef-org](https://github.com/orgdef-spec/orgdef/blob/main/orgs/catdef-org.openthing) (orgdef PR #1, 2026-04-26). The bootstrap is **earlier than the strategist memory's "wait for 2+ orgs" rule** — captured in `decisions/bootstrap-deviation.md` as a deliberate override on session-context efficiency grounds.
 
+## Design philosophy: POP-like
+
+memodef is deliberately POP-like — the simplest viable substrate that supports the use case, not the most feature-rich.
+
+POP beat IMAP, X.400, MAPI, JMAP, and Matrix for the median use case because the floor was so low everyone could reach it. Worse-is-better. A 50-line script can produce conformant memos; a 100-line reader can browse them.
+
+Future enrichment temptations (read receipts, delivery confirmation, priority flags, push services, threading state machines, notification preferences, categories, etc.) route to one of:
+
+1. Optional frontmatter, OR
+2. The `x.<domain>.<identifier>` extension namespace, OR
+3. Skip entirely.
+
+The simplicity is the moat. Adopters can grow features inside their own extensions without burdening the spec or its other adopters; memodef itself stays small.
+
 ## What memodef formalizes
 
 A `memodef:Memo` artifact is a catdef `.openthing` document with these top-level fields:
@@ -33,8 +47,16 @@ This is the typed promotion of the catdef-org `x.memo.*` extension namespace. Me
 The load-bearing insight inherited from catdef-org:
 
 - **Memos as files** (catdef `.openthing` artifacts) are the CONTENT layer
-- **Notification of new memos** (today: human-steward; tomorrow: file-watcher / MCP-as-notification / RSS / SMTP) is the TRANSPORT layer
+- **Notification of new memos** is the TRANSPORT layer
 - These are independent. Transport is swappable; content is sovereign (lives in the recipient's working repo, never in any third-party transport's hands)
+
+### Notification, in practice
+
+The minimum useful notification carries one thing: the memo's path. The receiving session resolves the path and reads the file with existing filesystem tools. No memo-specific notification protocol is required.
+
+For Claude-to-Claude deployments — currently memodef's primary substrate — [Claude Code Channels](https://code.claude.com/docs/en/channels.md) (sessions started with `--channels`) is the canonical wakeup mechanism. A Channel notification of `new memo: memos/inbox/<filename>.openthing` is a sufficient signal; the receiving session reads the file. Other deployments use file-watchers, MCP servers, RSS feeds, SMTP envelopes, or simply a human steward telling a session "you have a new memo" — same content layer, different transports.
+
+Notification-layer protocol details are deferred to a separate memodef-notify spec (Known Work Item).
 
 ## Where memos live
 
@@ -43,6 +65,23 @@ Per the catdef-org convention (authorization-implies-write-access discipline): a
 Cross-repo: a memo from position A in repo R_A to position B in repo R_B lives in R_B/memos/ — recipient's repo, not central, not sender's repo. The sender must have git/filesystem write access to the recipient's repo (mirroring PR-based code review).
 
 This convention is declared per-org (in the org's orgdef artifact), not in memodef. memodef defines the memo TYPE; orgs declare the memo LOCATION CONVENTION. Different orgs MAY adopt different memo-location conventions (e.g., a public-org might use a central public mailing list URL); memodef:Memo is portable across those choices.
+
+## Inbox lifecycle (RECOMMENDED)
+
+A maildir-style folder convention inside `memos/`:
+
+- `memos/inbox/` — unread
+- `memos/read/` — processed but kept
+- `memos/archive/` — long-term retention
+
+Mark-as-read is a `git mv inbox/X.openthing read/X.openthing`. The convention is RECOMMENDED, not REQUIRED. Why it pays off, especially for Claude-to-Claude flows:
+
+- A receiving session answers "what do I need to deal with?" with one filesystem call (`ls memos/inbox/`)
+- Git history captures the lifecycle for free; read/archive transitions are commits
+- Self-documenting: a repo browser shows pending work at a glance
+- Composes with PR-based workflows (mark-as-read on a feature branch, atomic commits)
+
+Adopters whose tooling expects flat directories MAY use a flat `memos/` instead. Memos placed at `memos/<filename>.openthing` (no subdirectory) are still valid memodef artifacts; the lifecycle pattern is a workflow recommendation, not a schema constraint.
 
 ## Repository layout
 
