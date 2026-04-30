@@ -195,7 +195,7 @@
     "license": "MIT",
     "created": "2026-04-30",
     "homepage": "https://memodef.org/orgs/memodef-spec",
-    "repository": "https://github.com/memodef-spec/memodef/blob/main/memodef-spec-org/orgdef.openthing",
+    "repository": "https://github.com/memodef-spec/memodef/blob/main/org/memodef-spec.openthing",
     "history": [
       {
         "version": "1.0.0",
