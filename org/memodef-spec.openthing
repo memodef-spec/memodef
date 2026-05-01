@@ -8,7 +8,7 @@
 
   "mission": "Define autonomous AI-to-AI memo-message exchange between positions in an organization in an open, machine-readable way. The output is portable, transport-agnostic memodef:Memo .openthing artifacts that bootstrap a recipient AI session into an inter-position handoff with zero context backfill, while preserving an auditable git-tracked trail accessible to humans.",
 
-  "vision": "Part of the AI Governance Pattern (AIGP) family — alongside catdef, roledef, and orgdef — defining the pattern of governed, autonomous AI-to-AI communication between positions in an organization. The primary reader of a memodef:Memo is another AI session: when one position's AI hands off to another's, the memo IS the handoff artifact. AI-legibility is the load-bearing optimization; memodef:Memo artifacts are auditable (git-preserved chain) and human-accessible (markdown bodies, scannable filenames, version-controlled lifecycle) — but never at the expense of machine-readability.",
+  "vision": "Part of the Open Agentic Governance Pattern (OAGP) family — alongside catdef, roledef, and orgdef — defining the pattern of governed, autonomous AI-to-AI communication between positions in an organization. The primary reader of a memodef:Memo is another AI session: when one position's AI hands off to another's, the memo IS the handoff artifact. AI-legibility is the load-bearing optimization; memodef:Memo artifacts are auditable (git-preserved chain) and human-accessible (markdown bodies, scannable filenames, version-controlled lifecycle) — but never at the expense of machine-readability.",
 
   "scope": "The memodef SCHEMA, conformance test suite, canonical memo template library, recommended folder lifecycle conventions, and the design philosophy for memo-shaped artifacts. Out of scope: notification-layer protocol details (deferred to a forthcoming memodef-notify spec, Known Work Item per CONTRIBUTING.md), curation of any org's operational memos (those live in adopter orgs' per-position working repos per the org-declared memo-location convention), substrate-level concerns belonging to catdef, org structure (orgdef), and individual roles or jobs (roledef).",
 
@@ -184,9 +184,9 @@
   "metadata": {
     "kind": "operational",
     "derived_from": {
-      "id": "aigp-family-open-standard",
+      "id": "oagp-family-open-standard",
       "version": "1.0.0",
-      "url": "https://github.com/orgdef-spec/orgdef/blob/main/proposed-orgs/aigp-family-open-standard.openthing"
+      "url": "https://github.com/orgdef-spec/orgdef/blob/main/proposed-orgs/oagp-family-open-standard.openthing"
     },
     "authors": [
       "Scott <scott@confusedgorilla.com> (Director)",
@@ -200,7 +200,7 @@
       {
         "version": "1.0.0",
         "date": "2026-04-30",
-        "change": "Initial bootstrap, derived from aigp-family-open-standard canonical template v1.0.0 via org-creation-facilitator (high-context mode). Slot-fill content drawn from memodef-spec/memodef README.md, CLAUDE.md, CONTRIBUTING.md, SCHEMA.md, and decisions/proposal-2026-04-29-catdef-strategist-architecture-validation.md. The 'AI-legibility primacy' value's three-priority hierarchy reflects Director directive 2026-04-30."
+        "change": "Initial bootstrap, derived from oagp-family-open-standard canonical template v1.0.0 via org-creation-facilitator (high-context mode). Slot-fill content drawn from memodef-spec/memodef README.md, CLAUDE.md, CONTRIBUTING.md, SCHEMA.md, and decisions/proposal-2026-04-29-catdef-strategist-architecture-validation.md. The 'AI-legibility primacy' value's three-priority hierarchy reflects Director directive 2026-04-30."
       }
     ]
   }
