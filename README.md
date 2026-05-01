@@ -11,7 +11,7 @@ memodef sits in the catdef family alongside [roledef](https://github.com/roledef
 - **orgdef** describes how roles compose into organizations (one org chart per artifact)
 - **memodef** describes how positions in an organization communicate with each other (one memo per artifact)
 
-> **Status:** v0.1 bootstrap. The `memodef:Memo` type formalizes the `x.memo.*` extension namespace established empirically by [catdef-org](https://github.com/orgdef-spec/orgdef/blob/main/orgs/catdef-org.openthing) (orgdef PR #1, 2026-04-26). The bootstrap is **earlier than the strategist memory's "wait for 2+ orgs" rule** — captured in `decisions/bootstrap-deviation.md` as a deliberate override on session-context efficiency grounds.
+> **Status:** v0.2.0. The `memodef:Memo` type formalizes the `x.memo.*` extension namespace established empirically by [catdef-org](https://github.com/orgdef-spec/orgdef/blob/main/orgs/catdef-org.openthing) (orgdef PR #1, 2026-04-26). v0.2 added the `body_ref` OPTIONAL field for sibling `.body.md` content (strictly additive; v0.1 memos remain conformant). The original bootstrap was **earlier than the strategist memory's "wait for 2+ orgs" rule** — captured in `decisions/bootstrap-deviation.md` as a deliberate override on session-context efficiency grounds.
 
 ## Design philosophy: POP-like
 
@@ -39,6 +39,7 @@ A `memodef:Memo` artifact is a catdef `.openthing` document with these top-level
 - `in_reply_to` — filename of the predecessor memo when this is a reply (OPTIONAL)
 - `action_required` — boolean (OPTIONAL)
 - `thread_id` — opaque identifier grouping related memos (OPTIONAL)
+- `body_ref` — sibling `.body.md` filename for long-form content; `body` becomes a 1–3-sentence triage summary (OPTIONAL, v0.2+)
 
 This is the typed promotion of the catdef-org `x.memo.*` extension namespace. Memos written under the legacy `x.memo.*` form on a generic `catdef:Thing` remain valid (forward-compatible per catdef's reader-lenient discipline), but new memos SHOULD use `type: "memodef:Memo"` with top-level fields.
 
@@ -82,6 +83,17 @@ Mark-as-read is a `git mv inbox/X.openthing read/X.openthing`. The convention is
 - Composes with PR-based workflows (mark-as-read on a feature branch, atomic commits)
 
 Adopters whose tooling expects flat directories MAY use a flat `memos/` instead. Memos placed at `memos/<filename>.openthing` (no subdirectory) are still valid memodef artifacts; the lifecycle pattern is a workflow recommendation, not a schema constraint.
+
+### `body_ref` and the maildir lifecycle (v0.2+)
+
+When a memo uses `body_ref` ([SCHEMA.md → body_ref](SCHEMA.md#body_ref-string-relative-path--added-in-v02)), the sibling `.body.md` file is co-located in the same directory as the memo. The maildir mark-as-read action moves both files atomically:
+
+```bash
+git mv memos/inbox/<filename>.openthing memos/read/
+git mv memos/inbox/<filename>.body.md memos/read/
+```
+
+Implementations MAY provide a small wrapper (e.g., a `memodef-mark-read <memo-filename>` shell function or tool subcommand) that handles both moves; the spec does not require tooling beyond `git mv`. The two-line invocation is mechanically trivial; co-location is what makes it work.
 
 ## Repository layout
 
@@ -129,6 +141,8 @@ The strategist role for memodef will be derived from [`senior-open-standards-str
 - [ ] memodef-strategist roledef (derivation; in roledef-spec, separate PR)
 
 **v0.2 (richer patterns):**
+- [x] `body_ref` OPTIONAL field for sibling `.body.md` files ([decision 2026-05-01](decisions/proposal-2026-05-01-body-ref-v0.2.md))
+- [x] First conformance fixtures (canonical pair, regression guard, two invalid counterexamples)
 - [ ] Additional templates as patterns surface (reply, broadcast, action-tracking, archival)
 - [ ] memodef:Thread type for explicit thread management (if needed)
 - [ ] Conformance fixtures expansion as adopters surface edge cases
@@ -145,4 +159,4 @@ The strategist role for memodef will be derived from [`senior-open-standards-str
 
 ## Status
 
-**v0.1 bootstrap.** The spec is being authored alongside the first template artifact. Both will iterate as we discover what the schema actually needs to support.
+**v0.2.0.** v0.1 bootstrap formalized the `x.memo.*` extension namespace into the typed `memodef:Memo` shape. v0.2 added `body_ref` for sibling `.body.md` content (strictly additive). The spec continues to iterate as adopter experience accumulates.

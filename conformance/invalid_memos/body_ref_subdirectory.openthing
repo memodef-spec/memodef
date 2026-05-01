@@ -1,0 +1,26 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.2.0",
+  "type": "memodef:Memo",
+
+  "from": "alice",
+  "to": "bob",
+  "subject": "Memo with body_ref pointing to subdirectory — SHOULD violation",
+  "sent": "2026-05-15T09:00:00Z",
+  "body_ref": "bodies/2026-05-15-0900--alice--bob--quarterly-handoff.body.md",
+  "body": "Bob — handing off Q2 priorities. See sibling for full content.",
+
+  "metadata": {
+    "fixture_purpose": "SHOULD-level counterexample: body_ref contains a path separator, breaking the bare-filename SHOULD rule. Co-location is what makes maildir folder-as-state composability work; subdirectory references break atomic move of the file pair through inbox/read/archive lifecycle. SHOULD-level violations produce Pass-with-notes findings, not FAIL.",
+    "fixture_violates": [
+      "body_ref SHOULD-rule: 'be a bare filename in the same directory as the memo (no ../, no subdirectories)'",
+      "Maildir composability: subdirectory references prevent atomic move of memo + sibling pair"
+    ],
+    "alternative_violations_same_class": [
+      "body_ref containing '../' (parent-directory traversal)",
+      "body_ref containing absolute path",
+      "body_ref containing URL scheme"
+    ],
+    "expected_validator_finding": "Pass-with-notes — SHOULD-level violation; co-location convention not followed"
+  }
+}

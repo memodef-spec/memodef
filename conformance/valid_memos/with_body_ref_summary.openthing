@@ -1,0 +1,24 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.2.0",
+  "type": "memodef:Memo",
+
+  "from": "alice",
+  "to": "bob",
+  "subject": "Quarterly handoff — Q2 priorities and open items",
+  "sent": "2026-05-15T09:00:00Z",
+  "action_required": true,
+  "body_ref": "with_body_ref_summary.body.md",
+  "body": "Bob — handing off Q2 priorities, open items in three areas (analytics, infra, vendor). Full brief in the sibling file; 30-minute read. Decisions needed before 2026-06-01.",
+
+  "metadata": {
+    "fixture_purpose": "Canonical valid v0.2 memo using body_ref. Demonstrates the SHOULD pattern: body holds a 1-3-sentence triage summary; sibling .body.md holds the long-form content. Sibling file is co-located in the same directory and follows the recommended naming convention <memo-filename-without-.openthing>.body.md.",
+    "fixture_validates": [
+      "memodef 0.2.0 version stamp accepted",
+      "body_ref OPTIONAL field accepted with bare-filename SHOULD",
+      "body field non-empty MUST satisfied even when body_ref is present",
+      "body field SHOULD pattern (1-3-sentence summary) demonstrated",
+      "Co-located sibling file naming convention demonstrated"
+    ]
+  }
+}

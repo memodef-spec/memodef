@@ -1,0 +1,20 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.1.0",
+  "type": "memodef:Memo",
+
+  "from": "alice",
+  "to": "bob",
+  "subject": "Quick question about Q3",
+  "sent": "2026-04-26T14:00:00Z",
+  "body": "Bob — what's the Q3 deadline?\n\n— Alice",
+
+  "metadata": {
+    "fixture_purpose": "Regression guard: minimal v0.1.0 memo with no body_ref field. Confirms that v0.1 inline-body shape remains conformant under v0.2 readers — additivity invariant for the body_ref field. Validators MUST accept this memo as fully conformant.",
+    "fixture_validates": [
+      "v0.1.0 memo remains valid under v0.2.0 readers (additivity invariant)",
+      "body_ref absence is valid (OPTIONAL field)",
+      "Minimal MUST-only memo (5 required fields) is conformant"
+    ]
+  }
+}

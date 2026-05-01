@@ -1,0 +1,21 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.2.0",
+  "type": "memodef:Memo",
+
+  "from": "alice",
+  "to": "bob",
+  "subject": "Memo with body_ref but empty body — invalid",
+  "sent": "2026-05-15T09:00:00Z",
+  "body_ref": "body_ref_with_empty_body.body.md",
+  "body": "",
+
+  "metadata": {
+    "fixture_purpose": "Counterexample: body_ref is present but body is empty. Violates the body MUST-non-empty internal-consistency rule. The point of the rule: an empty envelope defeats the AI-triage purpose — recipients can't decide whether to load body_ref without scanning body.",
+    "fixture_violates": [
+      "Internal consistency rule #1: 'Have all 5 required top-level fields (from, to, subject, sent, body) present and non-empty' — body is empty",
+      "AI-legibility primacy: envelope-as-triage-artifact requires non-empty body even when body_ref carries the long-form content"
+    ],
+    "expected_validator_finding": "FAIL — empty body field"
+  }
+}

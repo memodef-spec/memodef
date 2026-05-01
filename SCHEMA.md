@@ -1,4 +1,4 @@
-# memodef Schema — v0.1.0
+# memodef Schema — v0.2.0
 
 This document defines the structure and validation rules for **memodef artifacts**: portable, machine-readable memo-messages exchanged between positions in an organization, expressed as catdef-compliant `.openthing` files.
 
@@ -78,6 +78,7 @@ This makes inboxes scannable by date + sender + recipient + subject without open
   "in_reply_to": "<predecessor filename, optional>",
   "action_required": <boolean, optional>,
   "thread_id": "<opaque identifier, optional>",
+  "body_ref": "<sibling .body.md filename, optional>",
 
   "metadata": {...},
 
@@ -159,6 +160,8 @@ The memo content. Markdown. SHOULD use the plain-text `== Section ==` convention
 "body": "== Background ==\n\n...\n\n== The ask ==\n\n..."
 ```
 
+When `body_ref` (see Recommended fields) is present, `body` SHOULD be a short triage summary (1–3 sentences); the long-form content lives in the referenced sibling file. `body` MUST remain non-empty regardless of `body_ref` presence — recipients scan `body` to decide whether to load `body_ref`, so an empty envelope defeats the AI-triage purpose.
+
 ---
 
 ## Recommended fields (SHOULD)
@@ -186,6 +189,20 @@ Opaque identifier grouping related memos across replies. Useful for tools that v
 ```json
 "thread_id": "pr5-template-literal-fix"
 ```
+
+### `body_ref` (string, relative path) — added in v0.2
+
+Path to a sibling file containing the memo's full body content, resolved relative to the memo file's location. When present, `body` SHOULD be a short triage summary (1–3 sentences); the full content lives in the referenced sibling file.
+
+```json
+"body_ref": "2026-05-01-1430--alice--bob--quarterly-handoff.body.md"
+```
+
+The sibling file SHOULD be a markdown document. The path SHOULD be a bare filename in the same directory as the memo (no `../`, no subdirectories) — co-location preserves maildir folder-as-state composability so that the file pair moves atomically through the inbox/read/archive lifecycle. The recommended naming convention is `<memo-filename-without-.openthing>.body.md`.
+
+Validators with filesystem access SHOULD verify the referenced file exists and report a Pass-with-notes finding on broken references; senders are responsible for ensuring the sibling file is committed alongside the memo. Validators without filesystem access (pure-syntax validators) MAY skip the existence check.
+
+`body_ref` is OPTIONAL and strictly additive. v0.1 memos with no `body_ref` field remain conformant under v0.2 with no changes.
 
 ### `metadata` (object)
 
@@ -265,6 +282,7 @@ The mapping from legacy to typed:
 | `x.memo.sent` | `sent` |
 | `x.memo.in_reply_to` | `in_reply_to` |
 | `x.memo.action_required` | `action_required` |
+| `x.memo.body_ref` (v0.2) | `body_ref` |
 | `body` | `body` (unchanged) |
 
 memodef-aware consumers (validators, renderers, inbox tools) SHOULD recognize both forms.
@@ -315,6 +333,7 @@ A valid `memodef:Memo` SHOULD:
 2. Place `body` as Markdown using the `== Section ==` convention for cross-transport readability
 3. When a reply, populate `in_reply_to` with the predecessor's bare filename
 4. Include `metadata.sender_session_arc` (or equivalent) when the sender is an AI session whose arc identifier is meaningful for audit
+5. When `body_ref` is present: have `body` populated as a 1–3-sentence triage summary; have the referenced sibling file co-located in the same directory as the memo with name `<memo-filename-without-.openthing>.body.md`; ensure the sibling file is committed alongside the memo
 
 ---
 
@@ -413,8 +432,46 @@ The schema version is independent from any individual memo's `metadata.version` 
 }
 ```
 
+### Memo with `body_ref` (v0.2)
+
+Memo file `2026-05-15-0900--alice--bob--quarterly-handoff.openthing`:
+
+```json
+{
+  "catdef": "1.4",
+  "memodef": "0.2.0",
+  "type": "memodef:Memo",
+  "from": "alice",
+  "to": "bob",
+  "subject": "Quarterly handoff — Q2 priorities and open items",
+  "sent": "2026-05-15T09:00:00Z",
+  "action_required": true,
+  "body_ref": "2026-05-15-0900--alice--bob--quarterly-handoff.body.md",
+  "body": "Bob — handing off Q2 priorities, open items in three areas (analytics, infra, vendor). Full brief in the sibling file; 30-minute read. Decisions needed before 2026-06-01."
+}
+```
+
+Sibling file `2026-05-15-0900--alice--bob--quarterly-handoff.body.md`:
+
+```markdown
+== Background ==
+
+[long-form content with structured sections, embedded markdown, code blocks, tables —
+all the things that don't compose well as JSON-string-escaped content]
+
+== Priorities ==
+
+[...]
+
+== Open items ==
+
+[...]
+```
+
+`body` is a short triage summary; full content lives in the sibling file. Both files are committed atomically; mark-as-read moves both with a single helper invocation (see [README.md → Inbox lifecycle](README.md#inbox-lifecycle-recommended) for the maildir lifecycle helper note).
+
 ---
 
 ## Status
 
-**v0.1.0 — bootstrap.** This schema formalizes the `x.memo.*` extension namespace established empirically by catdef-org (orgdef PR #1, 2026-04-26). Stable shape expected by v0.1.x; substantive changes go through the proposal workflow per CONTRIBUTING.md.
+**v0.2.0 — `body_ref` support added** ([decisions/proposal-2026-05-01-body-ref-v0.2.md](decisions/proposal-2026-05-01-body-ref-v0.2.md)). v0.1.0 formalized the `x.memo.*` extension namespace established empirically by catdef-org (orgdef PR #1, 2026-04-26). v0.2.0 is strictly additive — v0.1 memos remain conformant. Substantive changes go through the proposal workflow per CONTRIBUTING.md.
