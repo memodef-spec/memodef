@@ -67,6 +67,29 @@ Cross-repo: a memo from position A in repo R_A to position B in repo R_B lives i
 
 This convention is declared per-org (in the org's orgdef artifact), not in memodef. memodef defines the memo TYPE; orgs declare the memo LOCATION CONVENTION. Different orgs MAY adopt different memo-location conventions (e.g., a public-org might use a central public mailing list URL); memodef:Memo is portable across those choices.
 
+## Receive convention (RECOMMENDED)
+
+When a memo arrives in a recipient's working repo (placed there by the sender via filesystem write under the catdef-org authorization-implies-write-access discipline), the **receiver** commits the memo to git as receipt-of-record. The sender's responsibility ends when the memo file is delivered to the recipient's working tree; subsequent commit, mark-as-read, and archive lifecycle are the recipient's seat-scope.
+
+```bash
+# Sender places memo in receiver's working tree (transport-specific; e.g., direct write).
+# Receiver, on session start, discovers untracked memos and commits:
+git status                                              # discover untracked memo file(s)
+git add memos/inbox/<memo-filename>.openthing           # stage receipt
+git commit -m "Receive <subject> from <sender-seat>"    # commit author = receiver's seat bot identity
+git push                                                # publish to recipient's origin
+```
+
+Why receiver-commits, not sender-commits:
+
+- **Each seat's lifecycle stays local to its own repo.** Senders aren't coupled to the recipient's branch state, push cadence, or PR conventions.
+- **Authorship semantics survive in git log.** `git log --author=<recipient-seat>` shows exactly the receive-record of that seat, regardless of who sent the memos.
+- **No infrastructure cost.** Receivers already commit in their own repo lifecycle; senders avoid maintaining push permissions across every recipient's repo.
+
+The convention is RECOMMENDED, not REQUIRED. Adopters whose tooling expects sender-commits (e.g., a sync-service-mediated transport, or a CI bot that auto-commits on the sender side) MAY use that pattern with reason.
+
+See [decisions/receiver-commits-convention.md](decisions/receiver-commits-convention.md) for full rationale and the four data-point empirical basis.
+
 ## Inbox lifecycle (RECOMMENDED)
 
 A maildir-style folder convention inside `memos/`:
