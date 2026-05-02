@@ -4,7 +4,7 @@
   "type": "orgdef:Organization",
   "id": "memodef-spec",
   "name": "memodef-spec",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "mission": "Define autonomous AI-to-AI memo-message exchange between positions in an organization in an open, machine-readable way. The output is portable, transport-agnostic memodef:Memo .openthing artifacts that bootstrap a recipient AI session into an inter-position handoff with zero context backfill, while preserving an auditable git-tracked trail accessible to humans.",
 
@@ -195,12 +195,17 @@
     "license": "MIT",
     "created": "2026-04-30",
     "homepage": "https://memodef.org/orgs/memodef-spec",
-    "repository": "https://github.com/memodef-spec/memodef/blob/main/org/memodef-spec.openthing",
+    "repository": "https://github.com/memodef-spec/memodef/blob/main/org/memodef-spec-organization.openthing",
     "history": [
       {
         "version": "1.0.0",
         "date": "2026-04-30",
         "change": "Initial bootstrap, derived from oagp-family-open-standard canonical template v1.0.0 via org-creation-facilitator (high-context mode). Slot-fill content drawn from memodef-spec/memodef README.md, CLAUDE.md, CONTRIBUTING.md, SCHEMA.md, and decisions/proposal-2026-04-29-catdef-strategist-architecture-validation.md. The 'AI-legibility primacy' value's three-priority hierarchy reflects Director directive 2026-04-30."
+      },
+      {
+        "version": "1.1.0",
+        "date": "2026-05-01",
+        "change": "Filename rename per orgdef-spec/decisions/proposal-operational-org-artifact-naming-convention.md: org/memodef-spec.openthing → org/memodef-spec-organization.openthing. The `-organization` suffix encodes artifact type at the filename level. id field unchanged ('memodef-spec'); only filename + metadata.repository URL updated. Substantive content unchanged."
       }
     ]
   }
