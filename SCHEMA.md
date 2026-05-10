@@ -1,4 +1,4 @@
-# memodef Schema — v0.2.0
+# memodef Schema — v0.3.0
 
 This document defines the structure and validation rules for **memodef artifacts**: portable, machine-readable memo-messages exchanged between positions in an organization, expressed as catdef-compliant `.openthing` files.
 
@@ -124,9 +124,15 @@ The sender's position id. The position id resolves in the org's `orgdef:Organiza
 
 ### `to` (string)
 
-The recipient's position id, OR the literal string `"all"` for org-wide broadcasts. Same resolution rules as `from`.
+The recipient's position id, OR one of two sentinel values:
+- `"all"` — org-wide broadcast
+- `"file"` — **memo-to-file** (added in v0.3): an informational record filed for a role's accumulated context rather than directed at any position
+
+Same resolution rules as `from` for position-id values.
 
 When `to` is `"all"`: per the catdef-org convention, `"all"` addressing requires the sender to write the memo to every applicable position's inbox (which means having git/filesystem write access to all those repos). The friction is a feature — naturally limits org-wide broadcasts to high-authority senders.
+
+When `to` is `"file"` (added in v0.3): the memo is filed for accumulated role context, not directed at any recipient. The role context comes from **folder placement** — a memo with `to: "file"` SHOULD live in `notes/<role-id>/<filename>.openthing` where `<role-id>` is the position id whose accumulated context the memo enriches. See [README.md → Notes folder — memos-to-file](README.md#notes-folder--memos-to-file-recommended-v03) for the folder convention. `from` is the position id of the role-incumbent who authored the note (the same value successive incumbents share); `metadata.sender_session_arc` becomes load-bearing for distinguishing successive incumbents.
 
 ```json
 "to": "catdef-canonical-implementor"
@@ -134,6 +140,10 @@ When `to` is `"all"`: per the catdef-org convention, `"all"` addressing requires
 
 ```json
 "to": "all"
+```
+
+```json
+"to": "file"
 ```
 
 ### `subject` (string)
@@ -334,6 +344,7 @@ A valid `memodef:Memo` SHOULD:
 3. When a reply, populate `in_reply_to` with the predecessor's bare filename
 4. Include `metadata.sender_session_arc` (or equivalent) when the sender is an AI session whose arc identifier is meaningful for audit
 5. When `body_ref` is present: have `body` populated as a 1–3-sentence triage summary; have the referenced sibling file co-located in the same directory as the memo with name `<memo-filename-without-.openthing>.body.md`; ensure the sibling file is committed alongside the memo
+6. When `to` is `"file"` (memo-to-file, v0.3+): place the memo in `notes/<role-id>/` where `<role-id>` is the role whose context is being accumulated; populate `metadata.sender_session_arc` with the authoring session's identifier (load-bearing for distinguishing successive incumbents who share `from`); do NOT use the maildir inbox/read/archive lifecycle (memos-to-file are flat — no per-recipient processing event to mark); do NOT set `action_required: true` (a filed-for-record memo has no recipient to act)
 
 ---
 
@@ -432,6 +443,28 @@ The schema version is independent from any individual memo's `metadata.version` 
 }
 ```
 
+### Memo-to-file (v0.3)
+
+Memo file `notes/memodef-strategist/2026-05-10-1430--memodef-strategist--file--why-summary-required-when-body-ref-present.openthing`:
+
+```json
+{
+  "catdef": "1.4",
+  "memodef": "0.3.0",
+  "type": "memodef:Memo",
+  "from": "memodef-strategist",
+  "to": "file",
+  "subject": "Why summary required when body_ref present — design rationale captured for successors",
+  "sent": "2026-05-10T14:30:00Z",
+  "body": "Successors filing in this folder: when you reach for body_ref-makes-body-optional, remember the AI-legibility-primacy framing — every reader pays the body-load tax for any one author's convenience. Worth the redundancy.",
+  "metadata": {
+    "sender_session_arc": "claude-opus-4-7-1m, desktop arc 2026-05-10 (post-v0.3-ratification)"
+  }
+}
+```
+
+Folder placement (`notes/memodef-strategist/`) carries the role-scope semantic; `to: "file"` declares the memo's filed-for-record nature. Successive incumbents read the folder to inherit accumulated context. No mark-as-read; no inbox/read/archive lifecycle. See [README.md → Notes folder](README.md#notes-folder--memos-to-file-recommended-v03).
+
 ### Memo with `body_ref` (v0.2)
 
 Memo file `2026-05-15-0900--alice--bob--quarterly-handoff.openthing`:
@@ -474,4 +507,4 @@ all the things that don't compose well as JSON-string-escaped content]
 
 ## Status
 
-**v0.2.0 — `body_ref` support added** ([decisions/proposal-2026-05-01-body-ref-v0.2.md](decisions/proposal-2026-05-01-body-ref-v0.2.md)). v0.1.0 formalized the `x.memo.*` extension namespace established empirically by catdef-org (orgdef PR #1, 2026-04-26). v0.2.0 is strictly additive — v0.1 memos remain conformant. Substantive changes go through the proposal workflow per CONTRIBUTING.md.
+**v0.3.0 — memos-to-file + `notes/<role-id>/` folder convention added** ([decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md](decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md)). v0.1.0 formalized the `x.memo.*` extension namespace established empirically by catdef-org. v0.2.0 added `body_ref` for sibling `.body.md` content ([decisions/proposal-2026-05-01-body-ref-v0.2.md](decisions/proposal-2026-05-01-body-ref-v0.2.md)). v0.3.0 added `to: "file"` sentinel + notes folder convention for intra-position context portability. All changes strictly additive — v0.1 / v0.2 memos remain conformant. Substantive changes go through the proposal workflow per CONTRIBUTING.md.

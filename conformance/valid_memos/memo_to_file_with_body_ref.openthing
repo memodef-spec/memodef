@@ -1,0 +1,24 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.3.0",
+  "type": "memodef:Memo",
+
+  "from": "memodef-strategist",
+  "to": "file",
+  "subject": "v0.3 ratification context — full design conversation captured for successors",
+  "sent": "2026-05-10T20:00:00Z",
+  "body_ref": "memo_to_file_with_body_ref.body.md",
+  "body": "Director course-corrected my over-engineered first sketch (new memodef:Note type) toward POP-discipline (sentinel + folder convention). Full design conversation, alternatives considered, and rationale in the sibling file — important for successors evaluating future enrichment proposals.",
+
+  "metadata": {
+    "fixture_purpose": "Memo-to-file using v0.2 body_ref for long-form content. Demonstrates that v0.2 body_ref composes naturally with v0.3 memos-to-file — exactly the case body_ref was built for (long-form hand-authored content where body-as-JSON-string ergonomics hurt). The intended folder placement (notes/<role-id>/) is flat with no maildir lifecycle; the sibling .body.md co-locates in the same flat folder.",
+    "fixture_validates": [
+      "v0.2 body_ref composes with v0.3 memo-to-file (no conflict between features)",
+      "body summary populated as triage abstract; full content in sibling .body.md",
+      "Sibling co-location convention applies to flat notes folders the same as to maildir inbox/read folders",
+      "Atomic-move helper note from README's Inbox lifecycle does NOT apply (memos-to-file are append-only; there's no inbox→read transition for the file pair)"
+    ],
+    "intended_folder_placement": "notes/memodef-strategist/2026-05-10-2000--memodef-strategist--file--v0.3-ratification-context.openthing (with sibling memo_to_file_with_body_ref.body.md)",
+    "sender_session_arc": "claude-opus-4-7-1m, desktop arc 2026-05-10 (post-v0.3-ratification)"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.3.0",
+  "type": "memodef:Memo",
+
+  "from": "memodef-strategist",
+  "to": "file",
+  "subject": "Memo-to-file with action_required: true — SHOULD violation",
+  "sent": "2026-05-10T15:00:00Z",
+  "action_required": true,
+  "body": "This memo is filed for the role's record but also requests action — semantic mismatch. A filed-for-record memo has no recipient to act; setting action_required: true is meaningless or misleading.",
+
+  "metadata": {
+    "fixture_purpose": "SHOULD-level counterexample: `to: \"file\"` combined with `action_required: true`. Memos-to-file are filed for accumulated context (no per-recipient processing event); action-required semantics require a recipient who can act. The two are incompatible by intent. SHOULD-level violation produces Pass-with-notes, not FAIL — the memo is structurally valid (all MUST fields present, no malformed values) but violates the v0.3 internal-consistency-rule for memos-to-file.",
+    "fixture_violates": [
+      "v0.3 internal-consistency-rule for memos-to-file: 'do NOT set `action_required: true` (a filed-for-record memo has no recipient to act)'",
+      "Semantic coherence: a memo cannot simultaneously be filed-for-record AND request action from a recipient — the use cases are mutually exclusive"
+    ],
+    "alternative_violations_same_class": [
+      "to: \"file\" with maildir folder placement (memos/inbox/ instead of notes/<role-id>/)",
+      "to: \"file\" without metadata.sender_session_arc (loses successive-incumbent differentiation)",
+      "to: \"file\" with in_reply_to pointing to a memo with `to: <position-id>` (mixing axes — a memo-to-file replying to a directed memo is suspicious; the response should be a directed memo back to the predecessor's sender)"
+    ],
+    "expected_validator_finding": "Pass-with-notes — SHOULD-level violation; memo-to-file with action_required is semantically incoherent"
+  }
+}

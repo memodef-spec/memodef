@@ -1,0 +1,23 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.3.0",
+  "type": "memodef:Memo",
+
+  "from": "memodef-strategist",
+  "to": "file",
+  "subject": "Re: Why summary required when body_ref present — empirical addition from desktop arc",
+  "sent": "2026-05-15T10:00:00Z",
+  "in_reply_to": "2026-05-10-1430--memodef-strategist--file--why-summary-required-when-body-ref-present.openthing",
+  "body": "Building on alice's 2026-05-10 note: tested the body_ref-without-summary case in a fresh session and confirmed the triage tax — recipient session loaded body_ref unconditionally because envelope had no triage signal. The earlier note's lean holds; recording the empirical confirmation for any successor reconsidering.",
+
+  "metadata": {
+    "fixture_purpose": "Memo-to-file authored by a successor incumbent of the same role, replying to a predecessor's memo-to-file via in_reply_to. Demonstrates threading composition for accumulated-discussion-across-incumbents — `from` is the same value (the role) but `metadata.sender_session_arc` differs, distinguishing successive incumbents.",
+    "fixture_validates": [
+      "memo-to-file with `in_reply_to` referencing another memo-to-file (threaded role-knowledge accumulation)",
+      "Successive incumbents share `from = <role-id>` but differ in `metadata.sender_session_arc`",
+      "Threading via in_reply_to works the same for memos and memos-to-file (no distinct mechanism)"
+    ],
+    "intended_folder_placement": "notes/memodef-strategist/2026-05-15-1000--memodef-strategist--file--re-why-summary-required.openthing",
+    "sender_session_arc": "claude-opus-4-7-1m, desktop arc 2026-05-15 (different incumbent than the predecessor)"
+  }
+}

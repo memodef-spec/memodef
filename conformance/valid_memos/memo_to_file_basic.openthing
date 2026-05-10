@@ -1,0 +1,23 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.3.0",
+  "type": "memodef:Memo",
+
+  "from": "memodef-strategist",
+  "to": "file",
+  "subject": "Why summary required when body_ref present — design rationale captured for successors",
+  "sent": "2026-05-10T14:30:00Z",
+  "body": "Successors filing in this folder: when you reach for body_ref-makes-body-optional, remember the AI-legibility-primacy framing — every reader pays the body-load tax for any one author's convenience. Worth the redundancy.",
+
+  "metadata": {
+    "fixture_purpose": "Canonical valid v0.3 memo-to-file. Demonstrates the `to: \"file\"` sentinel pattern: memo authored by a role-incumbent, filed for the role's accumulated record (not directed at any position). Intended location: notes/memodef-strategist/<filename>.openthing — folder placement carries the role-scope semantic; sentinel declares the filed-for-record nature.",
+    "fixture_validates": [
+      "memodef 0.3.0 version stamp accepted",
+      "to: \"file\" sentinel accepted alongside existing `to: <position-id>` and `to: \"all\"` semantics",
+      "metadata.sender_session_arc populated (load-bearing for distinguishing successive incumbents who share `from`)",
+      "Filename convention extends naturally: from = memodef-strategist, to = file, subject = design-rationale-summary"
+    ],
+    "intended_folder_placement": "notes/memodef-strategist/2026-05-10-1430--memodef-strategist--file--why-summary-required-when-body-ref-present.openthing",
+    "sender_session_arc": "claude-opus-4-7-1m, desktop arc 2026-05-10 (post-v0.3-ratification)"
+  }
+}

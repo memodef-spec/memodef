@@ -11,7 +11,7 @@ memodef sits in the catdef family alongside [roledef](https://github.com/roledef
 - **orgdef** describes how roles compose into organizations (one org chart per artifact)
 - **memodef** describes how positions in an organization communicate with each other (one memo per artifact)
 
-> **Status:** v0.2.0. The `memodef:Memo` type formalizes the `x.memo.*` extension namespace established empirically by [catdef-org](https://github.com/orgdef-spec/orgdef/blob/main/orgs/catdef-org.openthing) (orgdef PR #1, 2026-04-26). v0.2 added the `body_ref` OPTIONAL field for sibling `.body.md` content (strictly additive; v0.1 memos remain conformant). The original bootstrap was **earlier than the strategist memory's "wait for 2+ orgs" rule** — captured in `decisions/bootstrap-deviation.md` as a deliberate override on session-context efficiency grounds.
+> **Status:** v0.3.0. The `memodef:Memo` type formalizes the `x.memo.*` extension namespace established empirically by [catdef-org](https://github.com/orgdef-spec/orgdef/blob/main/orgs/catdef-org.openthing) (orgdef PR #1, 2026-04-26). v0.2 added the `body_ref` OPTIONAL field for sibling `.body.md` content. v0.3 added the `to: "file"` sentinel and `notes/<role-id>/` folder convention for **intra-position context portability** — strictly additive; v0.1 / v0.2 memos remain conformant. The original bootstrap was **earlier than the strategist memory's "wait for 2+ orgs" rule** — captured in `decisions/bootstrap-deviation.md` as a deliberate override on session-context efficiency grounds.
 
 ## Design philosophy: POP-like
 
@@ -32,7 +32,7 @@ The simplicity is the moat. Adopters can grow features inside their own extensio
 A `memodef:Memo` artifact is a catdef `.openthing` document with these top-level fields:
 
 - `from` — sender's position id (REQUIRED)
-- `to` — receiver's position id, OR the literal string `"all"` for org-wide broadcasts (REQUIRED)
+- `to` — receiver's position id, OR `"all"` for org-wide broadcasts, OR `"file"` for memos-to-file filed for accumulated role context (REQUIRED, `"file"` added in v0.3)
 - `subject` — short subject line for inbox scanning (REQUIRED)
 - `sent` — ISO 8601 timestamp (REQUIRED)
 - `body` — markdown content (REQUIRED)
@@ -118,6 +118,30 @@ git mv memos/inbox/<filename>.body.md memos/read/
 
 Implementations MAY provide a small wrapper (e.g., a `memodef-mark-read <memo-filename>` shell function or tool subcommand) that handles both moves; the spec does not require tooling beyond `git mv`. The two-line invocation is mechanically trivial; co-location is what makes it work.
 
+## Notes folder — memos-to-file (RECOMMENDED, v0.3+)
+
+A second folder convention parallel to `memos/`, for **role-portable accumulated context**:
+
+- `notes/<role-id>/` — memos filed for a role's record (not directed at any position; flat, no inbox/read/archive lifecycle)
+- One folder per role: `notes/memodef-strategist/`, `notes/catdef-strategist/`, etc.
+- Lifecycle is "append-only via commit history" (or, in hosted-store transports like [openbraid](https://openbraid.app), append-only log)
+- No mark-as-read — every successor incumbent reads everything they want to inherit
+
+Memos in this folder use the `to: "file"` sentinel ([SCHEMA.md → `to`](SCHEMA.md#to-string)). The role context comes from folder placement, not a separate field; `metadata.sender_session_arc` becomes load-bearing for distinguishing successive incumbents who share `from = <role-id>`.
+
+The two folder conventions serve two axes:
+
+| Axis | Folder | Lifecycle | Use case |
+|---|---|---|---|
+| Inter-position coordination | `memos/inbox/` → `read/` → `archive/` | Maildir (per-recipient processing) | Handoffs, action requests, replies, broadcasts |
+| Intra-position context portability | `notes/<role-id>/` | Flat (append-only) | Role-incumbent accumulated context for successors |
+
+A single repo MAY use both, neither, or just one. Neither is REQUIRED; the conventions are workflow recommendations, not schema constraints. Memos placed at flat `memos/` (no subdirectory) and role-folders elided are still valid memodef artifacts.
+
+The motivating use case (operationally tested across Claude Code + Claude Desktop + Claude-on-iPhone + Perplexity): a human interacts with what feels like one durable role (e.g., "I'm talking to catdef-strategist"), but behind that role any number of agents play across runtimes and over multiple days. Memos-to-file in `notes/<role-id>/` preserve accumulated context across role-incumbents so the human's mental model tells the truth.
+
+See [decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md](decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md) for design rationale.
+
 ## Repository layout
 
 ```
@@ -132,6 +156,12 @@ memodef/
 │   ├── handoff-memo.openthing
 │   ├── reply-memo.openthing
 │   └── broadcast-memo.openthing
+├── memos/                      ← inter-position coordination (per-recipient maildir lifecycle)
+│   ├── inbox/                  ← unread (per-recipient)
+│   ├── read/                   ← processed but kept
+│   └── archive/                ← long-term retention
+├── notes/                      ← intra-position context portability (v0.3+, flat per role)
+│   └── <role-id>/              ← memos-to-file for one role; append-only
 ├── conformance/                ← conformance fixtures
 │   ├── valid_memos/            ← exemplars exercising the schema
 │   ├── invalid_memos/          ← counterexamples
@@ -170,9 +200,15 @@ The strategist role for memodef will be derived from [`senior-open-standards-str
 - [ ] memodef:Thread type for explicit thread management (if needed)
 - [ ] Conformance fixtures expansion as adopters surface edge cases
 
-**v0.3+ (transport ecosystem):**
+**v0.3 (intra-position context portability):**
+- [x] `to: "file"` sentinel + `notes/<role-id>/` folder convention ([decision 2026-05-10](decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md))
+- [x] Conformance fixtures for memos-to-file (basic, threading, body_ref composition, action-required violation)
+- [x] Two-axis framing canonized in README (memos = inter-position coordination; memos-to-file = intra-position context portability)
+
+**v0.4+ (transport ecosystem and beyond):**
 - [ ] memodef-notify spec (separate? part of memodef?) for the notification-layer protocols (MCP-as-notification, file-watcher, RSS feed format, etc.)
 - [ ] Cross-org memo conventions (when one org sends a memo to another org's position)
+- [ ] `attachments_ref` for multi-file body content (parked from body_ref v0.2 Q5; awaiting empirical motivation)
 
 ## Related specs
 
@@ -182,4 +218,4 @@ The strategist role for memodef will be derived from [`senior-open-standards-str
 
 ## Status
 
-**v0.2.0.** v0.1 bootstrap formalized the `x.memo.*` extension namespace into the typed `memodef:Memo` shape. v0.2 added `body_ref` for sibling `.body.md` content (strictly additive). The spec continues to iterate as adopter experience accumulates.
+**v0.3.0.** v0.1 bootstrap formalized the `x.memo.*` extension namespace into the typed `memodef:Memo` shape. v0.2 added `body_ref` for sibling `.body.md` content. v0.3 added the `to: "file"` sentinel and `notes/<role-id>/` folder convention for intra-position context portability — operationally tested across Claude Code + Claude Desktop + Claude-on-iPhone + Perplexity with [openbraid](https://openbraid.app) as the hosted-store transport. All changes strictly additive. The spec continues to iterate as adopter experience accumulates.
