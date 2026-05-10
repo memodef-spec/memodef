@@ -1,4 +1,4 @@
-# memodef Schema — v0.3.0
+# memodef Schema — v0.3.1
 
 This document defines the structure and validation rules for **memodef artifacts**: portable, machine-readable memo-messages exchanged between positions in an organization, expressed as catdef-compliant `.openthing` files.
 
@@ -22,6 +22,12 @@ This document uses RFC 2119 keywords:
 - **MAY** — permitted; an author's choice
 
 The schema also uses catdef's `x.` extension namespace pattern for adopter-defined extensions.
+
+### SHOULD-violations in transport-bound implementations
+
+Validators with rich output channels can report SHOULD-level violations as **Pass-with-notes** findings — neither pure pass nor hard fail. Some transports (MCP tool calls, REST APIs) lack a Pass-with-notes channel: a tool either succeeds or raises an error, with no third state for "succeeded with caveats."
+
+**Implementations MAY choose either strict-rejection or lenient-acceptance for SHOULD-level violations when the transport lacks a Pass-with-notes channel; implementations SHOULD document which posture they take.** Both postures are conformant on the wire shape. A strict implementation honors the spec's intent by rejecting violations at the transport layer; a lenient implementation honors the wire-shape conformance by accepting and storing. The choice is implementation-policy, not schema-enforcement.
 
 ---
 
@@ -225,6 +231,8 @@ Authorship, licensing, sender/recipient alternative identifiers, attachments ref
   "retention_policy": "permanent"
 }
 ```
+
+**Hosted-store implementations of memodef SHOULD preserve `metadata` fields populated by senders, even when storage decomposes memo shape into typed columns.** Implementations MAY use a metadata-passthrough column (JSONB or equivalent) for fields the spec promotes to load-bearing without enumerating them in the storage schema. This mirrors catdef's reader-lenient discipline ("preserve what you don't understand") in the implementation direction — the spec promotes specific metadata fields to load-bearing (e.g., `metadata.sender_session_arc` for memos-to-file in v0.3) without enumerating them in the wire-shape MUST list, so implementations that decompose memos into typed columns risk dropping fields the spec requires for operational behavior.
 
 ---
 
@@ -507,4 +515,4 @@ all the things that don't compose well as JSON-string-escaped content]
 
 ## Status
 
-**v0.3.0 — memos-to-file + `notes/<role-id>/` folder convention added** ([decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md](decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md)). v0.1.0 formalized the `x.memo.*` extension namespace established empirically by catdef-org. v0.2.0 added `body_ref` for sibling `.body.md` content ([decisions/proposal-2026-05-01-body-ref-v0.2.md](decisions/proposal-2026-05-01-body-ref-v0.2.md)). v0.3.0 added `to: "file"` sentinel + notes folder convention for intra-position context portability. All changes strictly additive — v0.1 / v0.2 memos remain conformant. Substantive changes go through the proposal workflow per CONTRIBUTING.md.
+**v0.3.1 — implementer-experience clarifications** ([decisions/v0.3.1-implementer-experience-clarifications.md](decisions/v0.3.1-implementer-experience-clarifications.md)). Documentation patch driven by openbraid's first-implementation experience: SHOULD-violation surfacing latitude, hosted-store metadata-passthrough discipline, hosted-store folder-encoding equivalence. No behavior changes; clarifications only. v0.3.0 added `to: "file"` sentinel + notes folder convention for intra-position context portability ([decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md](decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md)). v0.2.0 added `body_ref` for sibling `.body.md` content ([decisions/proposal-2026-05-01-body-ref-v0.2.md](decisions/proposal-2026-05-01-body-ref-v0.2.md)). v0.1.0 formalized the `x.memo.*` extension namespace established empirically by catdef-org. All changes strictly additive — v0.1 / v0.2 / v0.3.0 memos remain conformant. Substantive changes go through the proposal workflow per CONTRIBUTING.md.

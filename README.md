@@ -11,7 +11,7 @@ memodef sits in the catdef family alongside [roledef](https://github.com/roledef
 - **orgdef** describes how roles compose into organizations (one org chart per artifact)
 - **memodef** describes how positions in an organization communicate with each other (one memo per artifact)
 
-> **Status:** v0.3.0. The `memodef:Memo` type formalizes the `x.memo.*` extension namespace established empirically by [catdef-org](https://github.com/orgdef-spec/orgdef/blob/main/orgs/catdef-org.openthing) (orgdef PR #1, 2026-04-26). v0.2 added the `body_ref` OPTIONAL field for sibling `.body.md` content. v0.3 added the `to: "file"` sentinel and `notes/<role-id>/` folder convention for **intra-position context portability** — strictly additive; v0.1 / v0.2 memos remain conformant. The original bootstrap was **earlier than the strategist memory's "wait for 2+ orgs" rule** — captured in `decisions/bootstrap-deviation.md` as a deliberate override on session-context efficiency grounds.
+> **Status:** v0.3.1. The `memodef:Memo` type formalizes the `x.memo.*` extension namespace established empirically by [catdef-org](https://github.com/orgdef-spec/orgdef/blob/main/orgs/catdef-org.openthing) (orgdef PR #1, 2026-04-26). v0.2 added the `body_ref` OPTIONAL field for sibling `.body.md` content. v0.3 added the `to: "file"` sentinel and `notes/<role-id>/` folder convention for **intra-position context portability**. v0.3.1 added implementer-experience clarifications driven by openbraid's first-implementation report (SHOULD-violation surfacing, metadata-passthrough, hosted-store folder encoding) — clarifications only, no behavior change. Strictly additive throughout; v0.1 / v0.2 / v0.3.0 memos remain conformant. The original bootstrap was **earlier than the strategist memory's "wait for 2+ orgs" rule** — captured in `decisions/bootstrap-deviation.md` as a deliberate override on session-context efficiency grounds.
 
 ## Design philosophy: POP-like
 
@@ -138,6 +138,8 @@ The two folder conventions serve two axes:
 
 A single repo MAY use both, neither, or just one. Neither is REQUIRED; the conventions are workflow recommendations, not schema constraints. Memos placed at flat `memos/` (no subdirectory) and role-folders elided are still valid memodef artifacts.
 
+**Hosted-store implementations** (e.g., [openbraid](https://openbraid.app)) encode the folder convention through query-time discrimination (a `kind` column or equivalent) rather than filesystem paths. The wire shape and behavioral semantics are unchanged: `notes/<role-id>/` maps to `WHERE kind='note' AND role_id=<role-id>` (or equivalent) in non-filesystem substrates. Adopters of hosted-store implementations interact via the implementation's API surface (e.g., MCP tool calls); the memo SHAPE is identical to the git-substrate case.
+
 The motivating use case (operationally tested across Claude Code + Claude Desktop + Claude-on-iPhone + Perplexity): a human interacts with what feels like one durable role (e.g., "I'm talking to catdef-strategist"), but behind that role any number of agents play across runtimes and over multiple days. Memos-to-file in `notes/<role-id>/` preserve accumulated context across role-incumbents so the human's mental model tells the truth.
 
 See [decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md](decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md) for design rationale.
@@ -218,4 +220,4 @@ The strategist role for memodef will be derived from [`senior-open-standards-str
 
 ## Status
 
-**v0.3.0.** v0.1 bootstrap formalized the `x.memo.*` extension namespace into the typed `memodef:Memo` shape. v0.2 added `body_ref` for sibling `.body.md` content. v0.3 added the `to: "file"` sentinel and `notes/<role-id>/` folder convention for intra-position context portability — operationally tested across Claude Code + Claude Desktop + Claude-on-iPhone + Perplexity with [openbraid](https://openbraid.app) as the hosted-store transport. All changes strictly additive. The spec continues to iterate as adopter experience accumulates.
+**v0.3.1.** v0.1 bootstrap formalized the `x.memo.*` extension namespace into the typed `memodef:Memo` shape. v0.2 added `body_ref` for sibling `.body.md` content. v0.3 added the `to: "file"` sentinel and `notes/<role-id>/` folder convention for intra-position context portability — operationally tested across Claude Code + Claude Desktop + Claude-on-iPhone + Perplexity with [openbraid](https://openbraid.app) as the hosted-store transport. v0.3.1 added implementer-experience clarifications from openbraid's first-implementation report (no behavior changes). All changes strictly additive. The spec continues to iterate as adopter experience accumulates.
