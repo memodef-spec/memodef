@@ -1,0 +1,83 @@
+{
+  "catdef": "1.4",
+  "orgdef": "1.0.0",
+  "type": "orgdef:Organization",
+  "id": "memodef-spec",
+  "name": "memodef-spec",
+  "version": "2.0.0",
+
+  "mission": "Define autonomous AI-to-AI memo-message exchange between positions in an organization in an open, machine-readable way. The output is portable, transport-agnostic memodef:Memo .openthing artifacts that bootstrap a recipient AI session into an inter-position handoff with zero context backfill, while preserving an auditable git-tracked trail accessible to humans.",
+
+  "vision": "Part of the Open Agentic Governance Pattern (OAGP) family — alongside catdef, roledef, and orgdef — defining the pattern of governed, autonomous AI-to-AI communication between positions in an organization. The primary reader of a memodef:Memo is another AI session: when one position's AI hands off to another's, the memo IS the handoff artifact. AI-legibility is the load-bearing optimization; memodef:Memo artifacts are auditable (git-preserved chain) and human-accessible (markdown bodies, scannable filenames, version-controlled lifecycle) — but never at the expense of machine-readability.",
+
+  "scope": "The memodef SCHEMA, conformance test suite, canonical memo template library, recommended folder lifecycle conventions, and the design philosophy for memo-shaped artifacts. Out of scope: notification-layer protocol details (deferred to a forthcoming memodef-notify spec, Known Work Item per CONTRIBUTING.md), curation of any org's operational memos, substrate-level concerns belonging to catdef, org structure (orgdef), and individual roles or jobs (roledef).",
+
+  "governance_model": "Bounded AI authority + human Director ratification. The memodef-strategist (AI role; informally seated by the catdef-family bootstrap session arc per decisions/bootstrap-deviation.md, formal seating pending derivation of the memodef-strategist roledef from senior-open-standards-strategist) holds delegated authority for design decisions; the memodef-maintainer (AI role, separate seat, bot identity memodef-maintainer@memodef.org) drafts spec text and conformance fixtures; the human Director (Scott) holds final tiebreaker authority on every merge, version bump, and governance change. Mirrors the catdef-family pattern.",
+
+  "values": [
+    { "name": "openness", "description": "memodef is fundamentally open — a pattern, not a product. No vendor lock-in, no privileged implementer, no proprietary extensions in the core spec. All AI runtimes are equal citizens.", "rationale": "Adoption depends on equal-citizen treatment of all implementers; vendor capture would defeat the standard's purpose." },
+    { "name": "completeness", "description": "A memodef:Memo MUST be sufficient that a fresh AI runtime loaded with the memo plus the recipient's orgdef + roledef + job context can act on the memo's content with zero context backfill.", "rationale": "Hallucination-prevention rule, not aesthetic preference. The primary reader is a machine; null context invites confabulation." },
+    { "name": "AI-legibility primacy", "description": "memodef serves three priorities, in strict order: (1) facilitate autonomous AI-to-AI communication so multiple AI sessions participate in tasks efficiently under bounded governance; (2) provide an auditable trail of that communication; (3) ensure that trail is readable and accessible by humans — but NOT at the expense of AI-legibility.", "rationale": "When a design choice trades AI-legibility against human-aesthetic preference, AI-legibility wins. Auditability and human-accessibility are constraints on the AI-legibility optimization, not vetoes against it." },
+    { "name": "POP-discipline", "description": "memodef is deliberately POP-like — the simplest viable substrate that supports the use case, not the most feature-rich. A 50-line script can produce conformant memos; a 100-line reader can browse them. Worse-is-better.", "rationale": "POP beat IMAP, X.400, MAPI, JMAP, and Matrix for the median use case because the floor was so low everyone could reach it. The simplicity is the moat." }
+  ],
+
+  "red_lines": [
+    { "rule": "No NULL-context memodef:Memo accepted by the spec, the validator, or canonical authoring tools.", "rationale": "Technical, not aesthetic — null context causes hallucination in the primary (machine) reader." },
+    { "rule": "No content policing of consumers.", "rationale": "What organizations choose to put in memodef:Memo body content is their business, not the spec's." },
+    { "rule": "No operational-memo curation. memodef-spec/memodef does not store, host, or maintain any organization's actual operational memos.", "rationale": "Operational memos belong to the orgs sending and receiving them, in those orgs' per-position working repos per the org-declared memo-location convention." },
+    { "rule": "No required infrastructure beyond filesystem + git. The spec MUST NOT require a database, API server, sync service, registry, or auth provider for basic interop.", "rationale": "memodef rides on substrate that already exists (git, filesystem) and primitives that already exist (Channels for Claude Code, file-watchers, MCP, RSS). Requiring net-new infrastructure would defeat worse-is-better." }
+  ],
+
+  "recommended_patterns": {
+    "general": [
+      { "pattern": "Senior strategist role separation", "description": "Specs SHOULD have a senior strategist role distinct from execution roles (maintainer, implementor), so each position stays in its lane.", "rationale": "Bounded scope per role enables clean handoffs and prevents authority concentration." },
+      { "pattern": "Two-section charter discipline", "description": "Organize orgdef content into two implicit sections: 'how this org operates' vs 'what we recommend for orgs using this pattern'.", "rationale": "First section orients a reader joining this spec org; second section guides anyone deriving a new org from this one as a template." },
+      { "pattern": "Recursive self-describing v1 milestone", "description": "Treat 'this very orgdef exists as a valid, self-describing artifact in the org folder' as the spec's v1 success criterion.", "rationale": "If the pattern can't bootstrap its own author, it can't bootstrap anyone." },
+      { "pattern": "Memos-as-files, transport-as-signal", "description": "Memo content lives as files in recipients' working repos. The notification carries only the path; the content lives in the file. Notification protocols are swappable; content is sovereign.", "rationale": "Files in a git repo are already version-controlled, branchable, mergeable, blameable, portable, addressable, searchable, reviewable, and secured by repo permissions. Decoupling notification from content prevents transport lock-in." },
+      { "pattern": "Folder-as-state (maildir-style)", "description": "Organize the recipient's inbox as memos/inbox/ (unread), memos/read/ (processed but kept), memos/archive/ (long-term retention). Mark-as-read is `git mv inbox/X.openthing read/X.openthing`. The lifecycle becomes git-visible.", "rationale": "A receiving session answers 'what do I need to deal with?' in one filesystem call. Self-documenting; git captures the lifecycle for free." },
+      { "pattern": "POP-discipline lens for enrichment proposals", "description": "When evaluating proposals to enrich the spec, apply the worse-is-better test: route to optional frontmatter, the x.<domain>.<identifier> extension namespace, or skip entirely.", "rationale": "The simplicity is the moat. A spec that accumulates features eventually loses the property that any 100-line reader can browse it." }
+    ],
+    "recommended_roles": [
+      { "role": "human-director", "priority": "MUST", "why": "Bounded-authority discipline requires a human ratifier." },
+      { "role": { "id": "senior-open-standards-strategist", "version": "1.0.0", "url": "https://roledef.org/roledefs/senior-open-standards-strategist.openthing" }, "priority": "MUST", "why": "Library-curation, scope-narrowing, pattern-promotion calls." },
+      { "role": "memodef-maintainer", "priority": "MUST", "why": "Drafts spec text, walks SCHEMA validations, files decision artifacts." },
+      { "role": "canonical-implementor", "priority": "SHOULD", "why": "Reference renderers, validators, and test fixtures are how the spec gets dogfooded." }
+    ]
+  },
+
+  "v1_success_criterion": "memodef shipped v1 via orgdef SCHEMA v1.0.0 ship 2026-05-10. This very orgdef.opencatalog is the self-describing artifact in memodef-spec's org folder.",
+
+  "relationships": [
+    { "type": "reports_to", "from": "strategist", "to": "director", "description": "Strategist holds delegated authority for design decisions; Director ratifies." },
+    { "type": "directs", "from": "strategist", "to": "maintainer", "description": "Strategist makes calls; maintainer drafts spec text, conformance fixtures, and implementation PRs." },
+    { "type": "directs", "from": "strategist", "to": "canonical-implementor", "description": "Strategist sets direction for canonical tooling priorities." },
+    { "type": "coordinates_with", "from": "strategist", "to": "external:catdef-strategist", "description": "Cross-spec coordination on catdef substrate concerns." },
+    { "type": "coordinates_with", "from": "strategist", "to": "external:roledef-strategist", "description": "Cross-spec coordination on roledef-reference concerns." },
+    { "type": "coordinates_with", "from": "strategist", "to": "external:orgdef-strategist", "description": "Cross-spec coordination on orgdef-convention concerns (x.org.memo_location)." }
+  ],
+
+  "items": [
+    { "type": "orgdef:Position", "id": "director", "name": "Director", "status": "staffed", "incumbent": { "kind": "human", "identifier": "Scott <scott@confusedgorilla.com>" }, "description": "Human Director with final tiebreaker authority. No role_definition (humans are not derived from roledefs)." },
+    { "type": "orgdef:Position", "id": "strategist", "name": "Strategist", "status": "informal", "description": "Library-curation, scope-narrowing, pattern-promotion calls. Files decisions in decisions/. Bot identity memodef-strategist@memodef.org. Informally seated by the catdef-family bootstrap session arc per decisions/bootstrap-deviation.md; formal seating pending memodef-strategist roledef derivation. Job artifact TBD." },
+    { "type": "orgdef:Position", "id": "maintainer", "name": "Maintainer", "status": "informal", "description": "Drafts spec text, maintains conformance fixtures, validates submissions, files implementation PRs in support of strategist decisions. Bot identity memodef-maintainer@memodef.org. Job artifact TBD." },
+    { "type": "orgdef:Position", "id": "canonical-implementor", "name": "Canonical Implementor", "status": "vacant", "description": "Develops and tests canonical implementations of memodef-shaped tooling. Position forthcoming; Job artifact TBD." }
+  ],
+
+  "metadata": {
+    "kind": "operational",
+    "derived_from": { "id": "oagp-family-open-standard", "version": "2.0.0", "url": "https://github.com/orgdef-spec/orgdef/blob/main/proposed-orgs/oagp-family-open-standard.opencatalog" },
+    "authors": [
+      "Scott <scott@confusedgorilla.com> (Director)",
+      "memodef-strategist <memodef-strategist@memodef.org>"
+    ],
+    "license": "MIT",
+    "created": "2026-04-30",
+    "homepage": "https://memodef.org/orgs/memodef-spec",
+    "repository": "https://github.com/memodef-spec/memodef/blob/main/org/memodef-spec-organization.opencatalog",
+    "history": [
+      { "version": "1.0.0", "date": "2026-04-30", "change": "Initial bootstrap, derived from oagp-family-open-standard canonical template v1.0.0. Slot-fill content drawn from memodef-spec README.md, CLAUDE.md, CONTRIBUTING.md, SCHEMA.md. 'AI-legibility primacy' value reflects Director directive 2026-04-30." },
+      { "version": "1.1.0", "date": "2026-05-01", "change": "Filename rename: org/memodef-spec.openthing → org/memodef-spec-organization.openthing per the operational-org-artifact-naming-convention decision. id unchanged." },
+      { "version": "2.0.0", "date": "2026-05-10", "change": "MAJOR substrate-shape migration per decisions/proposal-orgdef-as-opencatalog-substrate-shape.md (filed in orgdef-spec). orgdef field bumped 0.3.0 → 1.0.0; artifact substrate .openthing → .opencatalog. 4 positions migrated to items[] with type:orgdef:Position. No embedded job items (memodef-spec org/jobs/ was empty placeholder; jobs-as-items will apply when memodef-spec authors job specializations in the future). metadata.derived_from URL updated to canonical-template v2.0.0 .opencatalog. metadata.repository updated to .opencatalog. Substantive content unchanged." }
+    ]
+  }
+}
