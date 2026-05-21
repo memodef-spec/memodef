@@ -3,6 +3,7 @@
 **Disposition:** Strategist-pending — filed by memodef-strategist; Director ratification needed before maintainer drafts SCHEMA.md text
 **Origin:** Director use case surfaced 2026-05-19 (cross-runtime + cross-session role-portable VERBATIM context, distinct from memos' DISTILLED context). Designed in conversation 2026-05-19/20 after Director course-corrected an initial "separate transcriptdef-spec" sketch toward "class of memos in memodef" — keeping the artifact family unified rather than fragmenting across specs.
 **Filed:** 2026-05-20 by memodef-strategist
+**Revised:** 2026-05-20 by memodef-strategist — first-implementation observations from ccc-ninja@0.12.0 capture folded back in (folder-root anchoring made explicit; `ended` semantics tightened; subject-quality guidance added; OQ3 and OQ5 resolved; new OQ on folder-root anchoring added). See "First-implementation observations" section.
 **Schema impact:** strictly additive; minor version bump 0.3.1 → 0.4.0
 
 ## Summary
@@ -72,7 +73,7 @@ A verbatim recording of a conversation between participants, captured during or 
 
 #### Recommended fields (SHOULD) — `memodef:Transcript`
 
-- `ended` (ISO 8601 timestamp) — when the conversation closed; populate on session close if known. OPTIONAL because many conversations end without a clean close event (window died, machine restarted, session timed out).
+- `ended` (ISO 8601 timestamp) — when the conversation closed. **SHOULD be ABSENT while the conversation is ongoing or its close cannot be detected.** SHOULD be populated exactly once on session close if known. Mid-session snapshots SHOULD omit `ended`; setting `ended` to a snapshot-time falsely claims conversation termination and conflicts with the append-mode-is-load-bearing rationale (`ended` is the envelope's only mutable field; mutating it on every snapshot defeats the "envelope set once, body grows" property). Many conversations end without a clean close event (window died, machine restarted, session timed out) — in those cases `ended` remains absent permanently.
 - `transport` (string) — the substrate the conversation used (e.g., `"vscode-claude-code"`, `"openbraid"`, `"claude-desktop"`).
 - `capture_tool` (string) — capture tool name and version (e.g., `"ccc-ninja@0.11.0"`).
 - `capture_format` (string) — format of the body_ref content (e.g., `"markdown"`, `"jsonl"`).
@@ -94,9 +95,10 @@ Add a new top-level section after **Notes folder — memos-to-file (RECOMMENDED,
 A third folder convention parallel to `memos/` and `notes/<role-id>/`, for **verbatim conversation recordings**:
 
 - `transcripts/<role-id>/` — `memodef:Transcript` envelopes + their sibling `.body.md` files (paired, both co-located)
+- The `transcripts/` folder lives at the **working-repo root** — the same directory level as `CLAUDE.md`, `SCHEMA.md`, `README.md`, `memos/`, `decisions/`, `org/`. In a repo where the memodef working directory is nested below the GitHub-repo root (e.g., `memodef-spec/memodef/` inside the `memodef-spec` GitHub repo), `transcripts/` lives at `memodef-spec/memodef/transcripts/`, NOT at `memodef-spec/transcripts/`. This matches the placement of `memos/` and `notes/<role-id>/` — per-working-repo, not per-GitHub-repo. Capture tools writing into a working repo MUST resolve the working-repo root (the directory containing `CLAUDE.md` or `SCHEMA.md`) before writing transcripts.
 - One folder per role: `transcripts/memodef-strategist/`, `transcripts/openbraid-engineer/`, etc.
 - Multi-role conversations live in the **primary role's** folder; secondary participants appear in `participants[]` only
-- Lifecycle: append-only; the sibling `.body.md` grows as the conversation progresses (capture tool regenerates or appends), the envelope's `ended` field SHOULD update once on session close, all other envelope fields are immutable after creation
+- Lifecycle: append-only; the sibling `.body.md` grows as the conversation progresses (capture tool regenerates or appends), the envelope's `ended` field is set exactly once on session close and is otherwise absent (see SHOULD rules below), all other envelope fields are immutable after creation
 - No mark-as-read — transcripts are not directed to a recipient who processes; the audience is "future readers" (Director, AI successors)
 
 The three folder conventions now serve three audiences (see [SCHEMA.md → Three-axis framing](SCHEMA.md)):
@@ -122,6 +124,8 @@ The sibling body file follows the body_ref naming convention from v0.2: `<envelo
 ### Capture-tool integration expectations (CONTRIBUTING.md or README.md)
 
 Capture tools (e.g., ccc-ninja) SHOULD emit a `memodef:Transcript` envelope + sibling `.body.md` as an atomic pair. The envelope can be auto-populated from session metadata the tool already has access to (participants, started, transport, capture_tool, capture_format); subject and related_memos may require human or AI annotation. Tools that emit only the markdown body without an envelope produce conformant content but require manual envelope authoring by the receiver before the transcript is fully addressable.
+
+Capture tools SHOULD derive `subject` from substantive conversational content — typically the first user turn after harness/system bootstrap — and not from harness metadata, transport-injected tags (e.g., `<ide_opened_file>`, `<system-reminder>`, system messages emitted by the runtime before the user's first turn), or capture-tool internals. The `subject` is the primary scannable identifier in transcript listings and the seed for the filename slug; noise in the subject propagates into the filename and degrades discoverability for the audiences this artifact class serves (Director snippet-search, lost-window recovery, audit-trail pinning). This is capture-tool quality guidance, not a SCHEMA MUST: tools that emit noisy subjects produce conformant but degraded transcripts.
 
 ccc-ninja-specific integration (Director-driven separate work): a future ccc-ninja release SHOULD emit the envelope + body pair on "Save as Markdown" rather than just the markdown alone, populating envelope fields from JSONL session metadata.
 
@@ -199,12 +203,61 @@ For Director ratification:
 
 1. **`body` field on `memodef:Transcript`: SHOULD NOT vs MUST NOT.** Current lean: SHOULD NOT (Pass-with-notes if present) per v0.3.1 SHOULD-violation latitude. MUST NOT would be stricter (FAIL if present) but matches the design intent more closely. Adopters who include a body summary aren't actively harmful; they're just over-engineering by their own choice.
 2. **`body_ref` MUST vs SHOULD for `memodef:Transcript`.** Current proposal: MUST. Without body and without body_ref, the envelope has no content reference. Could relax to SHOULD if adopters want envelope-only "stub" transcripts (rejected as edge-case; MUST is cleaner).
-3. **`ended` field semantics on close.** Current: SHOULD-fill at session close. Some transports (openbraid) can auto-detect close; others (vscode + ccc-ninja) require explicit user action. Confirm SHOULD level (not MUST) given variability.
+3. ~~**`ended` field semantics on close.**~~ **RESOLVED 2026-05-20 (revision)** by ccc-ninja@0.12.0 first-implementation evidence — see "First-implementation observations" section. Resolution: `ended` SHOULD be ABSENT while the conversation is ongoing or its close cannot be detected; SHOULD be populated exactly once on session close. Mid-session snapshots SHOULD omit `ended`. SHOULD level (not MUST) confirmed given close-detection variability across transports. Reflected in SCHEMA SHOULD fields above.
 4. **Filename pattern.** Current: `YYYY-MM-DD-HHMM--<primary-role-id>--<short-subject>.openthing`. Deviation from `memodef:Memo`'s `<from>--<to>--<subject>` pattern. Acceptable, or prefer `<role-id>--transcript--<subject>` for visual parallelism with `<from>--<to>--<subject>`?
-5. **`metadata.redaction_status` enum values.** Current: `raw | partial | redacted`. Sufficient, or anticipate more (e.g., `pre-redaction-review`, `auto-redacted`, `human-reviewed`)? Lean: keep three; let adopters extend via `x.<domain>.*` extensions.
+5. ~~**`metadata.redaction_status` enum values.**~~ **RESOLVED 2026-05-20 (revision)** by ccc-ninja@0.12.0 first-implementation evidence — ccc-ninja emitted `"raw"` cleanly; the three-value enum (`raw | partial | redacted`) is sufficient. Adopters needing more granularity extend via `x.<domain>.*`.
 6. **`related_memos[]` path resolution.** Current: bare filenames OR full paths (loosely typed). Should it be normatively specified (bare filename only? paths permitted?)? Lean: keep loose for v0.4; the field is informational, not behavior-driving.
 7. **openbraid API scoping.** Same posture as v0.3 Q5: openbraid's call, not normative for memodef. Whether `send_memo` extends to transcripts via `kind="transcript"` discriminator or a parallel `send_transcript` MCP tool is openbraid's architectural decision. Flag for tracking only.
 8. **ccc-ninja integration.** The Director has indicated he'll prompt the ccc-ninja session (which predates memos) separately to do the envelope-emission work. Spec-side language SHOULD encourage capture tools to emit envelopes; ccc-ninja-specific work is out-of-scope for this proposal.
+
+9. **NEW — Folder-root anchoring for `transcripts/`.** Surfaced by ccc-ninja@0.12.0's first capture, which placed transcripts at the GitHub-repo root (`memodef-spec/transcripts/`) rather than the working-repo root (`memodef-spec/memodef/transcripts/`). The original proposal text said "parallel to `notes/<role-id>/`" without explicitly specifying which root — a genuine ambiguity when the memodef working directory is nested inside a wrapping GitHub repo. Current revision: working-repo root (the directory containing `CLAUDE.md` / `SCHEMA.md`), matching the placement of `memos/` and `notes/`. Reflected in the Folder convention section above. Confirm at ratification.
+
+## First-implementation observations
+
+A first implementation of this proposal shipped as a side effect of writing it: the ccc-ninja VS Code extension at version 0.12.0 began emitting `memodef:Transcript` envelope + sibling `.body.md` pairs ahead of Director ratification, capturing the memodef-strategist session conducting this proposal's revision (see `transcripts/memodef-strategist/2026-05-20-1932--memodef-strategist--ide-opened-file-the-user-opened-the-file-untitled.{openthing,body.md}`). The capture mirrors the openbraid-engineer 2026-05-10 implementation-experience pattern that drove v0.3.1: first-reader experience folded back into the proposal pre-ratification, strengthening rather than fragmenting the artifact.
+
+What the implementation got right (v0.4 conformance confirmation):
+
+- `type: "memodef:Transcript"`, `memodef: "0.4.0"` stamp
+- `participants[]` single-entry intra-position shape, with `position` + free-text `session_arc`
+- `started` / `ended` ISO timestamps populated
+- `body_ref` to sibling `.body.md`; envelope has no `body` field (append-mode preserved)
+- `capture_tool: "ccc-ninja@0.12.0"`, `capture_format: "markdown"`, `transport: "vscode-claude-code"` — clean self-identification via untyped envelope fields, no `x.<domain>.*` namespace pressure
+- `metadata.redaction_status: "raw"`, `metadata.retention_policy: "permanent"`, `metadata.source_jsonl` — extension via metadata, in line with the catdef-family pattern
+- Filename pattern `YYYY-MM-DD-HHMM--<role-id>--<subject-slug>.{openthing,body.md}` — single role-id (no double-id pair), matches intra-position single-participant shape
+
+What the implementation surfaced (folded into this revision):
+
+1. **Folder-root anchoring was ambiguous in the original draft.** ccc-ninja anchored at the GitHub-repo root. The revision adds explicit working-repo-root language to the Folder convention section and a new OQ9. Without this clarification, every capture-tool implementer would face the same ambiguity.
+2. **`ended` semantics needed tightening.** ccc-ninja populated `ended` mid-session (at first-capture timestamp, while the conversation continued). This is consistent with one reading of the original text ("update once on session close") if you interpret "close" loosely, but conflicts with the append-mode-is-load-bearing rationale: if `ended` mutates on every capture, the envelope is no longer set-once. The revision tightens to "SHOULD be ABSENT while ongoing; populated exactly once on detected close". OQ3 resolved.
+3. **Subject derivation grabbed harness noise.** ccc-ninja's subject was derived from the `<ide_opened_file>` system tag rather than the user's first substantive turn ("Hi, could you read /projects/memodef..."). The slug propagated into the filename, degrading discoverability. The revision adds capture-tool quality guidance (CONTRIBUTING-level, not SCHEMA MUST) in the Capture-tool integration section.
+4. **`redaction_status` enum confirmed sufficient.** ccc-ninja chose `"raw"` cleanly, exercising one of the three documented values. OQ5 resolved.
+
+What the implementation deliberately did NOT do (out of scope for spec-side; reserved for the parallel ccc-ninja-engineer feedback track):
+
+- Subject anchoring heuristics (which user turn to pick) — capture-tool internal
+- Append vs regenerate strategy for the sibling `.body.md` as JSONL grows — capture-tool internal (both are conformant per "regenerate or append" language in the Transcripts folder section)
+- Whether to emit an envelope at all on transcripts users haven't explicitly saved — capture-tool UX, not spec shape
+
+These items are queued for direct feedback to the ccc-ninja-engineer seat in the parallel work track (see Director's 2026-05-20 split: "1) spec updates, 2) ccc-ninja-engineer suggestions").
+
+### 0.13.0 conformance confirmed (same day)
+
+ccc-ninja-engineer received the feedback memo (`ccc-ninja/memos/inbox/2026-05-20-1955--memodef-strategist--ccc-ninja-engineer--v0-4-transcript-emission-feedback.openthing`) and shipped **ccc-ninja@0.13.0** the same day, implementing all three refinements. Verified at `memodef/transcripts/memodef-strategist/2026-05-19-1721--memodef-strategist--hey-claude-i-d-like-to-work-on-caliper.openthing` (a back-fill capture of a 2026-05-19 caliper session, written under the new version after VS Code reload):
+
+| Refinement | 0.12.0 behavior | 0.13.0 behavior | Status |
+|---|---|---|---|
+| Subject derivation | Grabbed `<ide_opened_file>` harness tag | `"Hey Claude -- I'd like to work on Caliper."` — first substantive user turn | ✅ |
+| `ended` field | Populated mid-session, advancing on re-save | Field ABSENT from envelope entirely | ✅ |
+| Folder-root anchoring | `s:/projects/memodef-spec/transcripts/` (outside git tree — git root is `memodef/`) | `s:/projects/memodef-spec/memodef/transcripts/` (inside git tree, working-repo root) | ✅ |
+
+The folder-root refinement turned out to be even more material than originally framed: the 0.12.0 placement was not just "non-conformant placement within the GitHub repo" but "outside the git-tracked tree entirely" (git root in this project is at `memodef-spec/memodef/`, not `memodef-spec/`). The 1932 transcript pair captured by 0.12.0 was therefore untracked and ungittable. After 0.13.0 conformance was confirmed, the pre-refinement 1932 pair was relocated into the working-repo-root location (now at `memodef/transcripts/memodef-strategist/2026-05-20-1932--...`) to bring the historical artifact into git-tree-conformance — its contents preserved verbatim (including the harness-tag subject) as authentic evidence of pre-refinement output.
+
+Bonus refinement, unsolicited: 0.13.0 emits `metadata.source_jsonl` with forward-slash path separators (`c:/Users/...`) instead of escaped backslashes (`c:\\Users\\...`). Cosmetic but platform-portable; not in the feedback memo's three asks.
+
+All six load-bearing-precedent items preserved across 0.12.0 → 0.13.0 (type stamp, participants single-entry shape, body_ref + no body, untyped first-class envelope fields, metadata extension, single-role-id filename pattern). Version stamp `memodef: "0.4.0"` maintained — appropriate while the proposal awaits Director ratification, since the implementation uses v0.4 features and the version-stamp-consistent-with-features-used rule applies regardless of ratification timing.
+
+**Net effect on proposal status:** v0.4 enters Director ratification as **spec-text-and-implementation-aligned** — proposal text reflects empirical reality from a real first implementation, AND that first implementation is conformant against the proposal's refined text. The capture-loop and the implementation-loop both closed on the same day.
 
 ## Cross-references
 
@@ -214,4 +267,6 @@ For Director ratification:
 - Charter (AI-legibility primacy, POP-discipline, no-vendor-advocacy values): [org/memodef-spec-organization.opencatalog](../org/memodef-spec-organization.opencatalog)
 - Architecture-validation decision (folder-as-state, README-vs-SCHEMA placement precedent): [decisions/proposal-2026-04-29-catdef-strategist-architecture-validation.md](../decisions/proposal-2026-04-29-catdef-strategist-architecture-validation.md)
 - ccc-ninja capture tool (reference implementation in flight; Director-driven envelope-emission work separate from this proposal): https://github.com/scottconfusedgorilla/ccc-ninja
+- First-implementation capture (this proposal's revision session, captured by ccc-ninja@0.12.0): `transcripts/memodef-strategist/2026-05-20-1932--memodef-strategist--ide-opened-file-the-user-opened-the-file-untitled.{openthing,body.md}` (relative to the memodef working-repo root)
+- openbraid-engineer v0.3 implementation-experience precedent (first-reader experience folded back into v0.3.1): [decisions/v0.3.1-implementer-experience-clarifications.md](../decisions/v0.3.1-implementer-experience-clarifications.md)
 - openbraid hosted-store (potential transport for openbraid-mediated transcripts; API scoping is openbraid's call per Q7): https://openbraid.app

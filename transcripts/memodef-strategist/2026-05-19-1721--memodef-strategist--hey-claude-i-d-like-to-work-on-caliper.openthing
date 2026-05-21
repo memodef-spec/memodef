@@ -1,0 +1,22 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+  "participants": [
+    {
+      "position": "memodef-strategist",
+      "session_arc": "claude-opus-4-7, vscode-claude-code session b59c60e9-eb73-40fe-9a3c-0d6fbb96187e"
+    }
+  ],
+  "started": "2026-05-19T21:21:54.181Z",
+  "subject": "Hey Claude -- I'd like to work on Caliper.",
+  "transport": "vscode-claude-code",
+  "capture_tool": "ccc-ninja@0.13.0",
+  "capture_format": "markdown",
+  "body_ref": "2026-05-19-1721--memodef-strategist--hey-claude-i-d-like-to-work-on-caliper.body.md",
+  "metadata": {
+    "redaction_status": "raw",
+    "retention_policy": "permanent",
+    "source_jsonl": "c:/Users/edsby/.claude/projects/s--Projects-caliper/b59c60e9-eb73-40fe-9a3c-0d6fbb96187e.jsonl"
+  }
+}

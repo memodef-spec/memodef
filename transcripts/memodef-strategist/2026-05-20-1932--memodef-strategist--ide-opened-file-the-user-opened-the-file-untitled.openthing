@@ -1,0 +1,23 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+  "participants": [
+    {
+      "position": "memodef-strategist",
+      "session_arc": "claude-opus-4-7, vscode-claude-code session 7645aeb1-75f4-4556-9d89-564c85ebb6bb"
+    }
+  ],
+  "started": "2026-05-20T23:32:03.961Z",
+  "subject": "<ide_opened_file>The user opened the file Untitled-1 in the IDE. This may or ...",
+  "transport": "vscode-claude-code",
+  "capture_tool": "ccc-ninja@0.12.0",
+  "capture_format": "markdown",
+  "body_ref": "2026-05-20-1932--memodef-strategist--ide-opened-file-the-user-opened-the-file-untitled.body.md",
+  "metadata": {
+    "redaction_status": "raw",
+    "retention_policy": "permanent",
+    "source_jsonl": "c:\\Users\\edsby\\.claude\\projects\\s--Projects-memodef-spec\\7645aeb1-75f4-4556-9d89-564c85ebb6bb.jsonl"
+  },
+  "ended": "2026-05-21T00:09:50.770Z"
+}
