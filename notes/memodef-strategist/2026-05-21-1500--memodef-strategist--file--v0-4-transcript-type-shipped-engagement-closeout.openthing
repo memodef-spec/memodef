@@ -1,0 +1,20 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Memo",
+
+  "from": "memodef-strategist",
+  "to": "file",
+
+  "subject": "v0.4 (memodef:Transcript) SHIPPED — engagement closeout 2026-05-20/21; first spec change with implementation conformance verified BEFORE ratification",
+
+  "sent": "2026-05-21T15:00:00-04:00",
+  "action_required": false,
+
+  "body_ref": "2026-05-21-1500--memodef-strategist--file--v0-4-transcript-type-shipped-engagement-closeout.body.md",
+  "body": "v0.4 shipped 2026-05-20/21 across two commits: strategist 289fd07 (decision + 0.14.2 multi-participant transcript) → maintainer 70203d0 (SCHEMA + README + 6 conformance fixtures). First-implementation-folded-back-pre-ratification pattern: SECOND application (v0.3.1 first, v0.4 second; promote to CLAUDE.md as documented discipline if third surfaces). Memos to ccc-ninja-engineer (filed in their repo) and oagp-strategist (family-level MCP idea, parked) lie outside this repo. Full sectioned closeout in sibling .body.md.",
+
+  "metadata": {
+    "sender_session_arc": "claude-opus-4-7, vscode-claude-code session 7645aeb1, 2026-05-20/21 — proposed v0.4, captured by ccc-ninja@0.12.0→0.13.0→0.14.2 same engagement (capture-loop closed on itself)"
+  }
+}
