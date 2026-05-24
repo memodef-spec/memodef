@@ -1,0 +1,36 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+
+  "participants": [
+    {"position": "memodef-strategist", "session_arc": "claude-opus-4-7, vscode-claude-code session multi-role-fixture"},
+    {"position": "director", "identity": "director@example.org"},
+    {"position": "openbraid-engineer", "session_arc": "claude-opus-4-7, claude-desktop session multi-role-fixture-2"}
+  ],
+  "started": "2026-05-21T10:00:00Z",
+  "ended": "2026-05-21T10:45:32Z",
+
+  "subject": "Multi-role transcript fixture — three participants, mixed AI + human, ended populated",
+  "transport": "vscode-claude-code",
+  "capture_tool": "ccc-ninja@0.14.2",
+  "capture_format": "markdown",
+  "body_ref": "multi_role_transcript.body.md",
+
+  "related_memos": [
+    "2026-05-21-1100--memodef-strategist--openbraid-engineer--multi-role-conversation-summary.openthing"
+  ],
+
+  "metadata": {
+    "redaction_status": "raw",
+    "retention_policy": "permanent",
+    "fixture_purpose": "Multi-role transcript fixture. Three participants exercising the participants[] array variability: two AI sessions (memodef-strategist + openbraid-engineer, each with session_arc) and one human (director, with identity). Demonstrates: (a) loose typing per entry — `position` + EITHER session_arc OR identity, (b) `ended` field populated since the conversation has a detected close, (c) `related_memos[]` populated demonstrating bidirectional audit-trail pattern. Per SHOULD #8, multi-role transcripts live in the primary role's folder; for this fixture the primary role would be memodef-strategist (envelope itself is folder-agnostic at the fixture layer).",
+    "fixture_validates": [
+      "participants[] with multiple entries accepted",
+      "Mixed session_arc (AI) and identity (human) entries within same participants[] array accepted",
+      "ended field populated when conversation has detected close",
+      "related_memos[] populated demonstrating bidirectional audit trail",
+      "Primary-role folder placement convention (referenced; envelope itself is folder-agnostic at fixture layer)"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+
+  "participants": [
+    {"position": "memodef-strategist", "session_arc": "claude-opus-4-7, fixture-with-body-field"}
+  ],
+  "started": "2026-05-21T12:30:00Z",
+
+  "subject": "Invalid (Pass-with-notes): memodef:Transcript envelope with body field — violates no-body SHOULD",
+  "transport": "vscode-claude-code",
+  "capture_tool": "ccc-ninja@0.14.2",
+  "capture_format": "markdown",
+  "body_ref": "transcript_with_body_field.body.md",
+  "body": "Short abstract regenerated each capture — this field SHOULD NOT be present on a memodef:Transcript envelope. Verbatim content lives in the sibling .body.md; an in-envelope abstract introduces regeneration friction that defeats the append-mode-is-load-bearing property.",
+
+  "metadata": {
+    "redaction_status": "raw",
+    "retention_policy": "permanent",
+    "fixture_purpose": "INVALID per SHOULD-rule (Pass-with-notes per v0.3.1 SHOULD-violation latitude). memodef:Transcript envelopes SHOULD NOT include a `body` field — verbatim content lives entirely in the sibling .body.md referenced by body_ref. Including body re-introduces the abstract-regeneration friction the type was designed to avoid (envelope is set once on creation; mutating body on each capture conflicts with the append-mode design). Implementations MAY choose strict-or-lenient on this SHOULD violation per v0.3.1 conformance language; documenting which posture is recommended.",
+    "fixture_validates": [
+      "body field on memodef:Transcript triggers Pass-with-notes per v0.3.1 SHOULD-violation latitude",
+      "Resolves Q1 from v0.4 ratification (SHOULD NOT, not MUST NOT)",
+      "Adopters who include body summaries aren't actively harmful — just over-engineering",
+      "Strict implementations may upgrade to FAIL with documented posture per v0.3.1 latitude"
+    ],
+    "expected_validator_outcome": "Pass-with-notes (strict implementations MAY FAIL per v0.3.1 latitude)"
+  }
+}

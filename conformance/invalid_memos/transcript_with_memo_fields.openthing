@@ -1,0 +1,37 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+
+  "participants": [
+    {"position": "memodef-strategist", "session_arc": "claude-opus-4-7, fixture-with-memo-fields"}
+  ],
+  "started": "2026-05-21T13:00:00Z",
+
+  "from": "memodef-strategist",
+  "to": "ccc-ninja-engineer",
+  "action_required": true,
+  "in_reply_to": "2026-05-20-1955--memodef-strategist--ccc-ninja-engineer--v0-4-transcript-emission-feedback.openthing",
+  "thread_id": "v0.4-feedback-thread",
+
+  "subject": "Invalid (Pass-with-notes): memodef:Transcript with memo-shape fields (from/to/action_required/in_reply_to/thread_id)",
+  "transport": "vscode-claude-code",
+  "capture_tool": "ccc-ninja@0.14.2",
+  "capture_format": "markdown",
+  "body_ref": "transcript_with_memo_fields.body.md",
+
+  "metadata": {
+    "redaction_status": "raw",
+    "retention_policy": "permanent",
+    "fixture_purpose": "INVALID per SHOULD-rule (Pass-with-notes per v0.3.1 SHOULD-violation latitude). memodef:Transcript envelopes SHOULD NOT include memodef:Memo shape fields: `from`, `to`, `action_required`, `in_reply_to`, `thread_id`. Transcripts use `participants[]` for multi-party authorship (no single from/to), have no per-recipient action semantics, and have no threading (transcripts are continuous, not message-chained). Implementations MAY accept these fields silently or reject; documenting which posture is recommended.",
+    "fixture_validates": [
+      "memodef:Memo shape fields on memodef:Transcript trigger Pass-with-notes",
+      "Field categories tested: from, to, action_required, in_reply_to, thread_id",
+      "participants[] is the canonical authorship shape for transcripts (not from/to)",
+      "Transcripts have no per-recipient action semantics (no action_required)",
+      "Transcripts have no threading (no in_reply_to / thread_id)",
+      "v0.3.1 SHOULD-violation latitude applies: strict implementations may upgrade to FAIL"
+    ],
+    "expected_validator_outcome": "Pass-with-notes (strict implementations MAY FAIL per v0.3.1 latitude)"
+  }
+}

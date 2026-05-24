@@ -129,20 +129,45 @@ A second folder convention parallel to `memos/`, for **role-portable accumulated
 
 Memos in this folder use the `to: "file"` sentinel ([SCHEMA.md → `to`](SCHEMA.md#to-string)). The role context comes from folder placement, not a separate field; `metadata.sender_session_arc` becomes load-bearing for distinguishing successive incumbents who share `from = <role-id>`.
 
-The two folder conventions serve two axes:
+The three folder conventions (memos + notes + transcripts; see [Transcripts folder](#transcripts-folder--verbatim-recordings-recommended-v04) below) serve three axes:
 
-| Axis | Folder | Lifecycle | Use case |
-|---|---|---|---|
-| Inter-position coordination | `memos/inbox/` → `read/` → `archive/` | Maildir (per-recipient processing) | Handoffs, action requests, replies, broadcasts |
-| Intra-position context portability | `notes/<role-id>/` | Flat (append-only) | Role-incumbent accumulated context for successors |
+| Axis | Type | Folder | Lifecycle | Audience |
+|---|---|---|---|---|
+| Inter-position coordination | `memodef:Memo` | `memos/inbox/` → `read/` → `archive/` | Maildir (per-recipient processing) | AI sessions (handoffs, action requests, replies, broadcasts) |
+| Intra-position context portability | `memodef:Memo` with `to: "file"` | `notes/<role-id>/` | Flat (append-only) | Successor AI incumbents of the same role |
+| Verbatim recording (v0.4+) | `memodef:Transcript` | `transcripts/<role-id>/` | Flat, append-only | Director (snippets, recovery) + AI sessions (lost-window recovery, audit-trail pinning) |
 
-A single repo MAY use both, neither, or just one. Neither is REQUIRED; the conventions are workflow recommendations, not schema constraints. Memos placed at flat `memos/` (no subdirectory) and role-folders elided are still valid memodef artifacts.
+A single repo MAY use any combination, all three, or none. Neither is REQUIRED; the conventions are workflow recommendations, not schema constraints. Memos placed at flat `memos/` (no subdirectory) and role-folders elided are still valid memodef artifacts.
 
 **Hosted-store implementations** (e.g., [openbraid](https://openbraid.app)) encode the folder convention through query-time discrimination (a `kind` column or equivalent) rather than filesystem paths. The wire shape and behavioral semantics are unchanged: `notes/<role-id>/` maps to `WHERE kind='note' AND role_id=<role-id>` (or equivalent) in non-filesystem substrates. Adopters of hosted-store implementations interact via the implementation's API surface (e.g., MCP tool calls); the memo SHAPE is identical to the git-substrate case.
 
 The motivating use case (operationally tested across Claude Code + Claude Desktop + Claude-on-iPhone + Perplexity): a human interacts with what feels like one durable role (e.g., "I'm talking to catdef-strategist"), but behind that role any number of agents play across runtimes and over multiple days. Memos-to-file in `notes/<role-id>/` preserve accumulated context across role-incumbents so the human's mental model tells the truth.
 
 See [decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md](decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md) for design rationale.
+
+## Transcripts folder — verbatim recordings (RECOMMENDED, v0.4+)
+
+A third folder convention parallel to `memos/` and `notes/<role-id>/`, for **verbatim conversation recordings**:
+
+- `transcripts/<role-id>/` — `memodef:Transcript` envelopes + their sibling `.body.md` files (paired, both co-located)
+- The `transcripts/` folder lives at the **working-repo root** — the same directory level as `CLAUDE.md`, `SCHEMA.md`, `README.md`, `memos/`, `decisions/`, `org/`. In a repo where the memodef working directory is nested below the GitHub-repo root, `transcripts/` lives inside the working directory (matching `memos/` and `notes/`), not at the GitHub-repo root
+- One folder per role: `transcripts/memodef-strategist/`, `transcripts/openbraid-engineer/`, etc.
+- Multi-role conversations live in the **primary role's** folder; secondary participants appear in `participants[]` only
+- Lifecycle: append-only; the sibling `.body.md` grows as the conversation progresses (capture tool regenerates or appends), the envelope's `ended` field is set exactly once on detected session close and is otherwise absent (see [SCHEMA.md → memodef:Transcript SHOULD rules](SCHEMA.md#recommended-fields-should--memodeftranscript))
+- No mark-as-read — transcripts are not directed to a recipient who processes; the audience is "future readers" (Director, AI successors)
+
+Memos and transcripts serve different audiences over different content shapes. Memos are **distillations** (the AI's interpretation, structured for triage); transcripts are **verbatim recordings** (the literal exchange, structured for citation and recovery). The body_ref pattern from v0.2 is reused: envelope is metadata-only, content lives in the sibling `.body.md`. Markdown is the canonical body content; capture tools (e.g., [ccc-ninja](https://github.com/scottconfusedgorilla/ccc-ninja)) produce formatted markdown from runtime session logs.
+
+**Three real use cases** drove the v0.4 ratification:
+1. Director snippets for books, presentations, citations — the transcript is the source-of-truth.
+2. Lost-window recovery — when a Claude Code window dies, a fresh session reads `transcripts/<role-id>/<arc>.body.md` to reconstruct the working state.
+3. Audit-trail pinning — decisions citing "the rationale was discussed at length" pin to transcript filenames; verbatim source is queryable.
+
+**Capture-tool integration expectations.** Capture tools SHOULD emit a `memodef:Transcript` envelope + sibling `.body.md` as an atomic pair. The envelope can be auto-populated from session metadata the tool already has access to (participants, started, transport, capture_tool, capture_format); subject and related_memos may require human or AI annotation. Tools SHOULD derive `subject` from substantive conversational content (typically the first user turn after harness/system bootstrap), not from harness metadata or transport-injected tags. Tools that emit only the markdown body without an envelope produce conformant content but require manual envelope authoring by the receiver before the transcript is fully addressable.
+
+**Hosted-store implementations** (e.g., openbraid) encode the folder convention through query-time discrimination (a `kind` column or equivalent) rather than filesystem paths — same posture as `notes/<role-id>/` per v0.3.1. The wire shape and behavioral semantics are unchanged.
+
+See [decisions/proposal-2026-05-20-transcript-type-and-folder-convention.md](decisions/proposal-2026-05-20-transcript-type-and-folder-convention.md) for design rationale (including the new-type-vs-sentinel distinction under POP-discipline) and empirical motivation (ccc-ninja@0.12.0 → 0.13.0 → 0.14.2 same-day conformance trail).
 
 ## Repository layout
 
@@ -164,6 +189,8 @@ memodef/
 │   └── archive/                ← long-term retention
 ├── notes/                      ← intra-position context portability (v0.3+, flat per role)
 │   └── <role-id>/              ← memos-to-file for one role; append-only
+├── transcripts/                ← intra-position verbatim recordings (v0.4+, flat per role)
+│   └── <role-id>/              ← memodef:Transcript envelopes + sibling .body.md pairs
 ├── conformance/                ← conformance fixtures
 │   ├── valid_memos/            ← exemplars exercising the schema
 │   ├── invalid_memos/          ← counterexamples
@@ -207,10 +234,18 @@ The strategist role for memodef will be derived from [`senior-open-standards-str
 - [x] Conformance fixtures for memos-to-file (basic, threading, body_ref composition, action-required violation)
 - [x] Two-axis framing canonized in README (memos = inter-position coordination; memos-to-file = intra-position context portability)
 
-**v0.4+ (transport ecosystem and beyond):**
+**v0.4 (verbatim recording):**
+- [x] `memodef:Transcript` top-level type for verbatim conversation recordings ([decision 2026-05-21](decisions/proposal-2026-05-20-transcript-type-and-folder-convention.md))
+- [x] `transcripts/<role-id>/` folder convention at working-repo root, parallel to `notes/<role-id>/`
+- [x] Three-axis framing canonized in README (memos = inter-position coordination; memos-to-file = intra-position distilled context; transcripts = intra-position verbatim recording)
+- [x] First spec change with implementation conformance verified BEFORE ratification (ccc-ninja@0.13.0, @0.14.2)
+- [x] Conformance fixtures for transcripts (canonical, multi-role, ongoing-no-ended, three invalid counterexamples)
+
+**v0.5+ (transport ecosystem and beyond):**
 - [ ] memodef-notify spec (separate? part of memodef?) for the notification-layer protocols (MCP-as-notification, file-watcher, RSS feed format, etc.)
 - [ ] Cross-org memo conventions (when one org sends a memo to another org's position)
 - [ ] `attachments_ref` for multi-file body content (parked from body_ref v0.2 Q5; awaiting empirical motivation)
+- [ ] Conformance harness (validator-as-CI, runtime-aware testing)
 
 ## Related specs
 

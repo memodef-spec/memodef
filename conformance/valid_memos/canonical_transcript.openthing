@@ -1,0 +1,35 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+
+  "participants": [
+    {"position": "memodef-strategist", "session_arc": "claude-opus-4-7, vscode-claude-code session canonical-fixture"}
+  ],
+  "started": "2026-05-21T09:00:00Z",
+
+  "subject": "Canonical v0.4 transcript fixture — single-participant, all SHOULDs satisfied",
+  "transport": "vscode-claude-code",
+  "capture_tool": "ccc-ninja@0.14.2",
+  "capture_format": "markdown",
+  "body_ref": "canonical_transcript.body.md",
+
+  "metadata": {
+    "redaction_status": "raw",
+    "retention_policy": "permanent",
+    "fixture_purpose": "Canonical valid v0.4 memodef:Transcript fixture. Single-participant intra-position shape. All MUST fields present and well-formed; SHOULD fields populated (transport, capture_tool, capture_format, metadata.redaction_status, metadata.retention_policy). `ended` field deliberately absent to demonstrate the SHOULD-be-absent-while-ongoing posture. No `body` field — verbatim content lives entirely in the sibling .body.md per body_ref pattern.",
+    "fixture_validates": [
+      "memodef 0.4.0 version stamp accepted for memodef:Transcript",
+      "type exactly 'memodef:Transcript' satisfies MUST",
+      "participants array with one entry containing position + session_arc satisfies MUST",
+      "started ISO 8601 timestamp parseable satisfies MUST",
+      "subject non-empty satisfies MUST",
+      "body_ref MUST satisfied with bare-filename co-located sibling",
+      "body field absence satisfies the no-body SHOULD",
+      "ended field absence satisfies the SHOULD-be-absent-while-ongoing posture",
+      "transport, capture_tool, capture_format populated for self-identification SHOULDs",
+      "metadata.redaction_status uses canonical value 'raw'",
+      "Co-located sibling file naming convention (envelope-filename-without-.openthing + .body.md) demonstrated"
+    ]
+  }
+}

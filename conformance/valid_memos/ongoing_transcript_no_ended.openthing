@@ -1,0 +1,28 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+
+  "participants": [
+    {"position": "memodef-strategist", "session_arc": "claude-opus-4-7, vscode-claude-code session ongoing-fixture"}
+  ],
+  "started": "2026-05-21T11:30:00Z",
+
+  "subject": "Ongoing-session transcript fixture — ended field absent demonstrates SHOULD-be-absent-while-ongoing",
+  "transport": "vscode-claude-code",
+  "capture_tool": "ccc-ninja@0.14.2",
+  "capture_format": "markdown",
+  "body_ref": "ongoing_transcript_no_ended.body.md",
+
+  "metadata": {
+    "redaction_status": "raw",
+    "retention_policy": "permanent",
+    "fixture_purpose": "Mid-session snapshot fixture. The conversation is ongoing; `ended` is correctly absent from the envelope. This is the conformant shape for any capture written during a live session — `ended` populates exactly once on detected session close, otherwise stays absent permanently. Demonstrates the OQ3 resolution from the v0.4 ratification (empirically motivated by ccc-ninja@0.12.0's mid-session `ended` mutation that defeated the append-mode property). The append-mode property: envelope is set once on creation; sibling .body.md grows as the conversation progresses; envelope's only mutable field is `ended`, set exactly once.",
+    "fixture_validates": [
+      "ended field absent for ongoing session — conformant per SHOULD",
+      "Append-mode operation preserved (envelope immutable except ended, body grows)",
+      "Conformant shape for capture-tool snapshots during live sessions",
+      "OQ3 resolution from v0.4 ratification empirically grounded"
+    ]
+  }
+}

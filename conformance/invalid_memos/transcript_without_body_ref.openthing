@@ -1,0 +1,27 @@
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+
+  "participants": [
+    {"position": "memodef-strategist", "session_arc": "claude-opus-4-7, fixture-without-body-ref"}
+  ],
+  "started": "2026-05-21T12:00:00Z",
+
+  "subject": "Invalid: memodef:Transcript with no body_ref field — has no content reference",
+  "transport": "vscode-claude-code",
+  "capture_tool": "ccc-ninja@0.14.2",
+  "capture_format": "markdown",
+
+  "metadata": {
+    "redaction_status": "raw",
+    "retention_policy": "permanent",
+    "fixture_purpose": "INVALID — memodef:Transcript with neither body nor body_ref. Per the no-body design (envelope has no body field) AND the body_ref MUST rule (resolves Q2 in v0.4 ratification), an envelope without body_ref has no content reference at all. Expected validator outcome: FAIL with citation to memodef:Transcript MUST #1 (body_ref required).",
+    "fixture_validates": [
+      "body_ref MUST violation FAILS validation",
+      "Envelope-only stub transcripts rejected per Q2 resolution",
+      "Validator emits citation to SCHEMA.md memodef:Transcript MUST list item #1"
+    ],
+    "expected_validator_outcome": "FAIL — body_ref missing"
+  }
+}

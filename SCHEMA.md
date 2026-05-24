@@ -65,6 +65,16 @@ YYYY-MM-DD-HHMM--<from>--<to>--<short-subject>.openthing
 
 This makes inboxes scannable by date + sender + recipient + subject without opening each file. The convention is recommended, not required — adopters MAY use other naming schemes if their inbox tooling expects them.
 
+Transcripts (`memodef:Transcript`, v0.4+) SHOULD use a parallel pattern with the primary role replacing both from/to:
+
+```
+YYYY-MM-DD-HHMM--<primary-role-id>--<short-subject>.openthing
+```
+
+The primary role is the role whose `transcripts/<role-id>/` folder the file lives in; full multi-participant detail is inside the envelope via `participants[]`. Sibling body files follow the body_ref naming convention: `<envelope-filename-without-.openthing>.body.md`.
+
+Capture tools SHOULD derive `<short-subject>` from substantive conversational content — typically the first user turn after harness/system bootstrap — and not from harness metadata, transport-injected tags (e.g., `<ide_opened_file>`, `<system-reminder>`), or capture-tool internals. The subject is the primary scannable identifier in transcript listings and the seed for the filename slug; noise in the subject propagates into the filename and degrades discoverability for the audiences this artifact class serves (snippet-search, lost-window recovery, audit-trail pinning). This is capture-tool quality guidance, not a SCHEMA MUST: tools that emit noisy subjects produce conformant but degraded transcripts.
+
 ---
 
 ## Top-level structure: `memodef:Memo`
@@ -267,6 +277,68 @@ A catalog of memo artifacts. Used for memo catalogs (e.g., a templates library, 
 
 ---
 
+## Top-level structure: `memodef:Transcript` (v0.4+)
+
+A verbatim recording of a conversation between participants, captured during or after the session and stored as a catdef-family artifact. The envelope is metadata-only; the conversation content lives in a sibling markdown file referenced by `body_ref`.
+
+```json
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+
+  "participants": [
+    {"position": "<role-id>", "session_arc": "<descriptor for AI session>"},
+    {"position": "director", "identity": "<email or other identifier>"}
+  ],
+  "started": "<ISO 8601 timestamp>",
+  "ended": "<ISO 8601 timestamp, OPTIONAL — absent while ongoing>",
+
+  "subject": "<short subject line for transcript listings>",
+  "transport": "<vscode-claude-code | openbraid | claude-desktop | etc.>",
+  "capture_tool": "<tool name and version, e.g. ccc-ninja@0.14.2>",
+  "capture_format": "<markdown | jsonl | other>",
+
+  "body_ref": "<sibling .body.md filename>",
+
+  "related_memos": [
+    "<filename or path of memo distilled from this transcript>"
+  ],
+
+  "metadata": {
+    "redaction_status": "raw | partial | redacted",
+    "retention_policy": "permanent | <other>"
+  }
+}
+```
+
+### Required fields (MUST) — `memodef:Transcript`
+
+- `catdef` (semver) — catdef substrate version
+- `memodef` (semver) — memodef schema version, MUST be `"0.4.0"` or higher for this type
+- `type` (string) — MUST be exactly `"memodef:Transcript"`
+- `participants` (array) — at least one participant; each entry MUST have `position` (string, position id) and either `session_arc` (AI session descriptor) or `identity` (human identifier)
+- `started` (ISO 8601 timestamp) — when the conversation began
+- `subject` (string) — short subject line for transcript listings (scannable, ≤80 chars suggested)
+- `body_ref` (string, relative path) — bare filename of the sibling `.body.md` containing the verbatim conversation content, co-located in the same directory as the envelope. The body_ref pattern from v0.2 applies; no `body` field is present on `memodef:Transcript` envelopes
+
+### Recommended fields (SHOULD) — `memodef:Transcript`
+
+- `ended` (ISO 8601 timestamp) — when the conversation closed. **SHOULD be ABSENT while the conversation is ongoing or its close cannot be detected.** SHOULD be populated exactly once on detected session close. Mid-session snapshots SHOULD omit `ended`; setting `ended` to a snapshot-time falsely claims conversation termination and conflicts with the append-mode-is-load-bearing rationale (`ended` is the envelope's only mutable field; mutating it on every snapshot defeats the "envelope set once, body grows" property). Many conversations end without a clean close event — `ended` remains absent permanently in those cases
+- `transport` (string) — the substrate the conversation used (e.g., `"vscode-claude-code"`, `"openbraid"`, `"claude-desktop"`)
+- `capture_tool` (string) — capture tool name and version (e.g., `"ccc-ninja@0.14.2"`)
+- `capture_format` (string) — format of the body_ref content (e.g., `"markdown"`, `"jsonl"`); markdown is the durable canonical form
+- `related_memos` (array of strings) — filenames or paths of memos distilled from or referencing this transcript. Enables bidirectional audit trail: decisions cite transcripts; transcripts list the decisions they produced. Loose-typed for v0.4 (bare filenames or full paths both accepted)
+- `metadata.redaction_status` (string) — one of `"raw"` (verbatim, no redaction), `"partial"` (some content redacted), `"redacted"` (significant redaction applied). Default: `"raw"`. Adopters needing more granularity extend via `x.<domain>.*`
+- `metadata.retention_policy` (string) — `"permanent"` (default) or adopter-specific values
+
+### Fields NOT present on `memodef:Transcript`
+
+- **`body`** — `memodef:Transcript` envelopes SHOULD NOT include a `body` field. The verbatim content lives entirely in the sibling file referenced by `body_ref`. This is intentional to preserve **append-mode operation**: capture tools regenerate or append to the sibling `.body.md` as conversations grow without ever needing to update an in-envelope abstract. Implementations encountering a `body` field on a `memodef:Transcript` SHOULD report Pass-with-notes per the v0.3.1 SHOULD-violation surfacing latitude.
+- **`from`, `to`, `action_required`, `in_reply_to`, `thread_id`** — these are `memodef:Memo` shape fields. `memodef:Transcript` uses `participants[]` for multi-party authorship and has no per-recipient action or threading semantics. Per v0.3.1 SHOULD-violation latitude, implementations MAY accept these fields silently or reject; documenting which posture is recommended.
+
+---
+
 ## Backward-compatible legacy form: `x.memo.*` extensions on a generic catdef thing
 
 Memos written under the legacy `x.memo.*` extension form on a generic `catdef:Thing` (per the catdef-org `x.org.memo_extension_namespace` declaration before memodef bootstrapped) are valid catdef artifacts and remain readable by memodef-aware consumers per catdef's reader-lenient discipline.
@@ -353,6 +425,24 @@ A valid `memodef:Memo` SHOULD:
 4. Include `metadata.sender_session_arc` (or equivalent) when the sender is an AI session whose arc identifier is meaningful for audit
 5. When `body_ref` is present: have `body` populated as a 1–3-sentence triage summary; have the referenced sibling file co-located in the same directory as the memo with name `<memo-filename-without-.openthing>.body.md`; ensure the sibling file is committed alongside the memo
 6. When `to` is `"file"` (memo-to-file, v0.3+): place the memo in `notes/<role-id>/` where `<role-id>` is the role whose context is being accumulated; populate `metadata.sender_session_arc` with the authoring session's identifier (load-bearing for distinguishing successive incumbents who share `from`); do NOT use the maildir inbox/read/archive lifecycle (memos-to-file are flat — no per-recipient processing event to mark); do NOT set `action_required: true` (a filed-for-record memo has no recipient to act)
+
+A valid `memodef:Transcript` (v0.4+) MUST:
+
+1. Have all required fields present: `catdef`, `memodef` (≥ `"0.4.0"`), `type` exactly `"memodef:Transcript"`, `participants` (non-empty array), `started` (parseable ISO 8601), `subject` (non-empty), `body_ref` (non-empty)
+2. Have each `participants[]` entry contain `position` (string) AND either `session_arc` (AI) or `identity` (human)
+3. NOT contain a `body` field — verbatim content lives entirely in the sibling file referenced by `body_ref`
+4. Have `catdef` and `memodef` version stamps consistent with the features used
+
+A valid `memodef:Transcript` SHOULD:
+
+1. Use the recommended file naming convention (`YYYY-MM-DD-HHMM--<primary-role-id>--<short-subject>.openthing`)
+2. Live in `transcripts/<role-id>/` at the working-repo root (the directory containing `CLAUDE.md`/`SCHEMA.md`/`memos/`/`notes/`/`decisions/`), one folder per role
+3. Have the referenced sibling `.body.md` file co-located in the same directory with name `<envelope-filename-without-.openthing>.body.md`, and committed atomically with the envelope
+4. Omit `ended` while the conversation is ongoing or its close cannot be detected; populate exactly once on detected session close
+5. Include `transport`, `capture_tool`, and `capture_format` for self-identification and provenance
+6. Have `subject` derived from substantive conversational content (capture tools SHOULD skip harness/system tags when picking the subject anchor)
+7. NOT include `memodef:Memo` shape fields (`from`, `to`, `action_required`, `in_reply_to`, `thread_id`) — transcripts use `participants[]` for multi-party authorship and have no per-recipient action or threading semantics
+8. Pick a primary-role folder for multi-role conversations; secondary participants appear in `participants[]` only (cross-role discoverability via shared parent folders is out of scope for v0.4)
 
 ---
 
@@ -511,8 +601,50 @@ all the things that don't compose well as JSON-string-escaped content]
 
 `body` is a short triage summary; full content lives in the sibling file. Both files are committed atomically; mark-as-read moves both with a single helper invocation (see [README.md → Inbox lifecycle](README.md#inbox-lifecycle-recommended) for the maildir lifecycle helper note).
 
+### `memodef:Transcript` (v0.4)
+
+Envelope file `transcripts/memodef-strategist/2026-05-19-1721--memodef-strategist--hey-claude-i-d-like-to-work-on-caliper.openthing`:
+
+```json
+{
+  "catdef": "1.4",
+  "memodef": "0.4.0",
+  "type": "memodef:Transcript",
+  "participants": [
+    {"position": "memodef-strategist", "session_arc": "claude-opus-4-7, vscode-claude-code session b59c60e9-eb73-40fe-9a3c-0d6fbb96187e"}
+  ],
+  "started": "2026-05-19T21:21:54.181Z",
+  "subject": "Hey Claude -- I'd like to work on Caliper.",
+  "transport": "vscode-claude-code",
+  "capture_tool": "ccc-ninja@0.13.0",
+  "capture_format": "markdown",
+  "body_ref": "2026-05-19-1721--memodef-strategist--hey-claude-i-d-like-to-work-on-caliper.body.md",
+  "metadata": {
+    "redaction_status": "raw",
+    "retention_policy": "permanent",
+    "source_jsonl": "c:/Users/edsby/.claude/projects/s--Projects-caliper/b59c60e9-eb73-40fe-9a3c-0d6fbb96187e.jsonl"
+  }
+}
+```
+
+Sibling file `2026-05-19-1721--memodef-strategist--hey-claude-i-d-like-to-work-on-caliper.body.md` contains the verbatim conversation as markdown (speaker labels, code blocks, tool invocations, timestamps — produced by the capture tool from the runtime's session log). Envelope is metadata-only; no `body` field. `ended` is absent because the conversation has no detected close event.
+
+Multi-participant variant adds a Director (or any human) via `identity`:
+
+```json
+{
+  "participants": [
+    {"position": "memodef-strategist", "session_arc": "claude-opus-4-7, vscode-claude-code session 7645aeb1"},
+    {"position": "director", "identity": "scott@confusedgorilla.com"}
+  ],
+  ...
+}
+```
+
+See [README.md → Transcripts folder](README.md#transcripts-folder--verbatim-recordings-recommended-v04) for the folder convention and three-axis framing.
+
 ---
 
 ## Status
 
-**v0.3.1 — implementer-experience clarifications** ([decisions/v0.3.1-implementer-experience-clarifications.md](decisions/v0.3.1-implementer-experience-clarifications.md)). Documentation patch driven by openbraid's first-implementation experience: SHOULD-violation surfacing latitude, hosted-store metadata-passthrough discipline, hosted-store folder-encoding equivalence. No behavior changes; clarifications only. v0.3.0 added `to: "file"` sentinel + notes folder convention for intra-position context portability ([decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md](decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md)). v0.2.0 added `body_ref` for sibling `.body.md` content ([decisions/proposal-2026-05-01-body-ref-v0.2.md](decisions/proposal-2026-05-01-body-ref-v0.2.md)). v0.1.0 formalized the `x.memo.*` extension namespace established empirically by catdef-org. All changes strictly additive — v0.1 / v0.2 / v0.3.0 memos remain conformant. Substantive changes go through the proposal workflow per CONTRIBUTING.md.
+**v0.4.0 — `memodef:Transcript` top-level type + `transcripts/<role-id>/` folder convention** ([decisions/proposal-2026-05-20-transcript-type-and-folder-convention.md](decisions/proposal-2026-05-20-transcript-type-and-folder-convention.md)). New top-level type for **verbatim conversation recordings**, parallel to `memodef:Memo` and `memodef:Library`. Envelope is metadata-only (no `body` field); verbatim content lives in sibling `.body.md` via `body_ref` (v0.2 pattern reused). `participants[]` multi-party authorship; `started`/`ended` multi-timestamp (ended SHOULD be absent while ongoing). `transcripts/<role-id>/` folder convention at working-repo root, parallel to `notes/<role-id>/`. Three-axis framing now canonical: **memos** = inter-position coordination, **memos-to-file** = intra-position distilled context, **transcripts** = intra-position verbatim recording. First spec change in memodef-spec history with implementation conformance verified BEFORE ratification (ccc-ninja@0.13.0 + @0.14.2). v0.3.1 — implementer-experience clarifications ([decisions/v0.3.1-implementer-experience-clarifications.md](decisions/v0.3.1-implementer-experience-clarifications.md)) added SHOULD-violation surfacing latitude, hosted-store metadata-passthrough discipline, hosted-store folder-encoding equivalence. v0.3.0 added `to: "file"` sentinel + notes folder convention for intra-position context portability ([decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md](decisions/proposal-2026-05-10-memos-to-file-and-notes-folder.md)). v0.2.0 added `body_ref` for sibling `.body.md` content ([decisions/proposal-2026-05-01-body-ref-v0.2.md](decisions/proposal-2026-05-01-body-ref-v0.2.md)). v0.1.0 formalized the `x.memo.*` extension namespace established empirically by catdef-org. All changes strictly additive — v0.1 / v0.2 / v0.3.0 / v0.3.1 memos remain conformant. Substantive changes go through the proposal workflow per CONTRIBUTING.md.
